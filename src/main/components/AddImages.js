@@ -6,10 +6,12 @@ import configData from "../../config.json";
 import OwlCarousel from "react-owl-carousel";
 import "owl.carousel/dist/assets/owl.carousel.css";
 import "owl.carousel/dist/assets/owl.theme.default.css";
+import { useForm } from 'react-hook-form';
 
 const AddImages = (props) => {
     const [show, setShow] = useState(false);
     const [isBtnLoading, setisBtnLoading] = useState(false);
+    const { register, handleSubmit } = useForm();
 
 
     const {id} = props;
@@ -20,15 +22,23 @@ const AddImages = (props) => {
     const handleClose = () => setShow(false);
     const handleShow = () => setShow(true);
 
-    const addImg =  async (e) => {
-        console.log(id)
+    const addImg =  async (data) => {
+      try {
+
+        const imagesArray = Array.from(data.images);
+
+        const formData = new FormData();
+        imagesArray.forEach((image) => {
+          formData.append('images', image);
+        });
+
+
+        // const formData = new FormData();
+        // data.images.forEach((image) => {
+        //   formData.append('images', image[0]);
+        // });
 
         setisBtnLoading(true);
-  
-        e.preventDefault()
-  
-        const formData = new FormData()
-        formData.append('picture', picture);
 
 
       await axios.post(`${configData.SERVER_URL}/estate/addImages/${id}`, formData)
@@ -46,17 +56,20 @@ const AddImages = (props) => {
         }
       });
 
+    } catch (error) {
+      console.error('Error uploading images:', error);
     }
 
-    const getEstImg = () => {
+    }
+
+    const getEstImg = async() => {
 
         setisBtnLoading(true);
 
         return axios.get(`${configData.SERVER_URL}/estate/getImages/${id}`).then((response) => {
-            console.log(response.data.data);
             if(response.data.status === "success"){
                 setisBtnLoading(false)
-                setImages(response.data.data);
+                setImages(response.data.data.images);
             }
             if (response.data.status === "error") {
                 setisBtnLoading(false)
@@ -72,6 +85,28 @@ const AddImages = (props) => {
         getEstImg();
       }, []);
   
+
+      const onDeleteImage = (index) => {
+
+        if (!window.confirm("are you sure you want to delete this?")) {
+          return
+        }
+        setisBtnLoading(true)
+            
+          axios.delete(`${configData.SERVER_URL}/estate/deleteImages/${id}/${index}`)
+          .then((response) => {
+            console.log(response);
+            if(response.data.status === "success"){
+                setisBtnLoading(false);
+                getEstImg();
+                alert(response.data.message);
+            }
+            if (response.data.status === "error") {
+                setisBtnLoading(false)
+                alert(response.data.message);
+            }
+          });
+   }
 
 
 
@@ -96,9 +131,10 @@ const AddImages = (props) => {
 
                     <OwlCarousel items={2} stagePadding={"50"} margin={8} autoplay={true}>  
                                 {images && images.length > 0 ?
-                                  images.map(img => ( <>
-                                    <div>
-                                      <img  className="img" src={`${configData.PIC_URL}/${img.picture}`}/>
+                                  images.map((img, index) => ( <>
+                                    <div key={index}>
+                                      <img crossorigin="anonymous" className="img" src={`${configData.PIC_URL}Images/${img}`}/>
+                                      <button onClick={() => onDeleteImage(index)}>Delete</button>
                                     </div>  
                                   </>)) 
                                   :<>
@@ -123,7 +159,7 @@ const AddImages = (props) => {
               <Modal.Header closeButton>
                 <Modal.Title></Modal.Title>
               </Modal.Header>
-          <form className="pt-3" onSubmit={addImg} method="POST"   encType="multipart/form-data" id="submit" >
+          <form className="pt-3"  onSubmit={handleSubmit(addImg)}  encType="multipart/form-data" id="submit" >
                   <Modal.Body>
 
                             <Row>
@@ -136,9 +172,8 @@ const AddImages = (props) => {
 
                               <div className="">
                                   <label className="form-label" for="customFile">Upload Estate Images</label>
-                                  <input type="file" className="form-control" id="customFile" name="picture"
-                                  onChange={(e)=> setPicture(e.target.files[0])}/>
-                                  </div>
+                                  <input  type="file" ref={register({ required: true })} className="form-control" id="customFile" name="images" multiple/>
+                                </div>
 
                                   </Col>
 

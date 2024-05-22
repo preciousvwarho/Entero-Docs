@@ -41,13 +41,12 @@ const AddFaq = (props) => {
           setisBtnLoading(false)
           console.log(response);
           if(response.data.status === "success"){
-              setisBtnLoading(false);
-              // alert(response.data.message);
+              setisBtnLoading(false); 
+              alert(response.data.message);
               setTitle('');
               setContent('')
               getFAQ();
-              // setShow(false);
-              // window.location.reload(true);
+              setShow(false);
             }
           if(response.data.status === "error"){
             setisBtnLoading(false);
@@ -57,7 +56,7 @@ const AddFaq = (props) => {
 
     }
 
-    const getFAQ = () => {
+    const getFAQ = async() => {
 
         setisBtnLoading(true);
 
@@ -101,12 +100,12 @@ const AddFaq = (props) => {
      const editFaq = (f) => {
         setTitle(f.title);
         setContent(f.content);
-        setFaqId(f.id)
+        setFaqId(f._id)
         setIsEdit(true);
         setShow(true);
       }
 
-     const updateFaq = () => {
+     const updateFaq = async() => {
 
               setisBtnLoading(true)
               return axios.put(`${configData.SERVER_URL}/estate/editFaq/${faqId}`, {  
@@ -162,7 +161,7 @@ const AddFaq = (props) => {
                                         {f.title} 
                                         <div>
                                             <span variant="primary" className="fa fa-edit mr-5" onClick={() => editFaq(f)}></span>
-                                            <span variant="primary" className="fa fa-trash" onClick={() => deleteFaq(f.id)}></span>
+                                            <span variant="primary" className="fa fa-trash" onClick={() => deleteFaq(f._id)}></span>
                                         </div>
                                     </div>
                                   </Accordion.Header>

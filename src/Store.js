@@ -1,5 +1,7 @@
 import React, {useState} from 'react';
+
 const initialState = {
+  profile: [],
   email: '',
   phoneNumber: '',
   fullName: ''

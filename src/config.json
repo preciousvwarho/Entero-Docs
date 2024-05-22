@@ -1,5 +1,7 @@
 {
-    "SERVER_URL": "https://api.enterodocuments.com/api",
-    "PIC_URL": "https://api.enterodocuments.com",
-    "WEB_URL":"https://enterodocuments.com"
+    "SERVER_URL": "http://localhost:9001/api",
+    "PIC_URL": "http://localhost:9001",
+    "WEB_URL":"https://enterodocuments.com",
+    "TEST_URL":"http://localhost:9001/api",
+    "TEXT_IMG":"http://localhost:9001"
 }
