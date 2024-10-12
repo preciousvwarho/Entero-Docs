@@ -1,3 +1,5 @@
+
+import { Notifications } from 'react-push-notification';
 import React from 'react';
 import './App.css';
 import {
@@ -28,6 +30,7 @@ import Allocation from './main/pages/Allocation';
 function App() {
   return (
     <Store>
+       {/* <Notifications /> */}
     <Router>
        <Switch>
        <Route path="/" exact>

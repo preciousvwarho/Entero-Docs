@@ -6,8 +6,20 @@ import { Button, Row, Col, Modal } from 'react-bootstrap';
 import configData from "../../config.json";
 import { useHistory } from "react-router-dom";
 import { useForm } from "react-hook-form";
+import { io } from 'socket.io-client';
+import { toast } from "react-toastify";
 
 function Estates() {
+
+    const socket = io('http://localhost:9001', {
+       
+    });
+
+    socket.on('connect', () => {
+        console.log('Connected to server:', socket.id);
+    });
+
+
   const { register, handleSubmit, reset, errors } = useForm();
 
     const history = useHistory();
@@ -58,12 +70,12 @@ function Estates() {
         if (responseJson.status === "success") {
               setisBtnLoading(false);
               reset();
-              alert(responseJson.message);
+              toast.success(responseJson.message);
              setShow(false);
         }
         if (responseJson.status === "error") {
               setisBtnLoading(false);
-              alert(responseJson.message);
+              toast.error(responseJson.message);
         }
       } catch (error) {
               setisBtnLoading(false);

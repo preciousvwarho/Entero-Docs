@@ -12,7 +12,8 @@
     overflow-y: hidden;
 }
 .alert{
-    padding: 0.2 0.2!important;
+    padding: 0.5rem 0.5rem!important;
+    font-size: 0.6rem!important;
 }
 .bg-circle-gradiant {
     background: radial-gradient(circle at 50% 50%, rgba(82, 179, 130, 0.1) 0%, rgba(82, 179, 130, 0.1) 33.333%, rgba(82, 179, 130, 0.3) 33.333%, rgba(82, 179, 130, 0.3) 66.666%, rgba(82, 179, 130, 0.5) 66.666%, rgba(82, 179, 130, 0.5) 99.999%);
@@ -162,11 +163,13 @@
 }
 .mainBoxOne{
     min-height:100vh;
-    width: 65%;
+    /* width: 80%; */
+    width: 70%;
     padding: 5% 3% 10% 3%;
 }
 .mainBoxTwo{
-    width: 35%;
+    /* width: 20%; */
+    width: 30%;
     min-height:100vh;
     border-left: 1px solid #D9D9D9!important;
     padding-top:5%;
@@ -197,7 +200,7 @@
     font-weight: bold;
 }
 .dateText{
-    font-size: 14px;
+    font-size: 10px;
     color: var(--textColor);
     font-weight: 600!important;
 }
@@ -655,7 +658,7 @@
     align-items: center;
 }
 .userSec{
-    width: 70%;
+    width: 80%;
     padding: 1% 0 0 5%;
     display: flex;
     align-items: center;
@@ -755,7 +758,7 @@
     /* justify-content: space-between; */
     flex-wrap: wrap;
     align-items: center;
-    gap: 15px;
+    gap: 10px;
 }
 .user-btn{
     padding: 5px 15px;
@@ -1227,6 +1230,9 @@ tr td{
 tr:nth-child(even) {
     background-color: transparent;
 }
+.item-list{
+    font-size:14px;
+}
 .btn-add{
     padding: 4px 8px;
     float: right;
@@ -1424,7 +1430,7 @@ span.fullName{
     border-radius: 10px;
 }
 .offcanvas-end{
-    width: 30%!important;
+    width: 40%!important;
 }
 .useDataImg3 {
     vertical-align: middle;

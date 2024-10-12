@@ -6,6 +6,7 @@ import NumberFormat from 'react-number-format';
 import { format } from 'date-fns';
 import configData from "../../../config.json";
 import { useHistory } from "react-router-dom";
+import { toast } from "react-toastify";
 
 const CommissionComp = (props) => {
     const history = useHistory();
@@ -85,13 +86,13 @@ const CommissionComp = (props) => {
 
                 if (responseJson.status === "success") {
                     setisBtnLoading(false);
-                    alert(responseJson.message);
+                    toast.success(responseJson.message);
                     handleClose();
                     window.location.reload(); 
                 }
                 if (responseJson.status === "error") {
                     setisBtnLoading(false);
-                    alert(responseJson.message);
+                    toast.error(responseJson.message);
                 }
             } catch (error) {
                     setisBtnLoading(false);
@@ -131,15 +132,13 @@ const CommissionComp = (props) => {
 
                             <NumericFormat value={c?.commission} displayType={'text'} thousandSeparator={true} prefix={"₦"} renderText={text => <td>{text}</td>}/>
 
-                             <td>{c?.requestType === 'refCommision' ? 'Refereer Commission' : 'My Commission'}</td>
+                             <td>{c?.requestType === 'refCommision' ? 'Referial Commission' : 'My Commission'}</td>
 
                             <td>{format(new Date(c?.createdAt), 'MMMM, do, yyy')}</td>
 
                             <td>
                             <span className={c?.status === 'paid' ? "completed" : (c?.status === 'rejected' ? "rejectedStatus" : "pendingStatus")}>{c?.status}</span>
                                 </td>
-
-
                             </tr>
                             
                             </>})
@@ -155,111 +154,111 @@ const CommissionComp = (props) => {
 
     <Modal show={show} onHide={handleClose}>
 
-<Modal.Body>
+            <Modal.Body>
 
-    <div className="modal-body my-4">
+                <div className="modal-body my-4">
 
-       
-       <div className="dueParent">
-                        {/* <img src={`${configData.PIC_URL}/`} className="img-fluid perfImg" alt="user"/> */}
-                        <span className="perfName">Client: {data?.docId?.clientId?.fullName}</span>
-                          <div className="view-more">
-                              <span>Refered by: {data?.docId?.marketerId?.fullName}</span>
-                          </div>
-                          <div className="view-acc">
-                              <span  onClick={()=> setDisplayAcc(!displayAcc)}>view account details</span>
-                          </div>
-                {displayAcc &&
-                    <div className="profInfo">
-                        <div className="profInfoData">
-                            <div className="profData">
-                                <span>Account Name</span>
-                                <span>{data?.requesterId?.accountName}</span>
-                            </div>
-                            <div className="profData">
-                                <span>Account Number</span>
-                                <span>{data?.requesterId?.accountNumber}</span>
-                            </div>
-                            <div className="profData">
-                                <span>Bank Name</span>
-                                <span>{data?.requesterId?.bankName}</span>
-                            </div>
-                        </div>
-                    </div>
-                 }
-
-
-                    <div className="profInfo">
-
-                        <div className="profInfoData">
-                            <div className="profData">
-                                <span>Commission type</span>
-                                <span>{data?.requestType === 'refCommision' ? 'Refereer Commission' : 'My Commission'}</span>
-                            </div>
-
-                            <div className="profData">
-                                <span>Estate</span>
-                                <span>{data.docId?.estateId?.name}</span>
-                            </div>
-
-                            <div className="profData">
-                                <span>Property Price</span>
-                                <NumericFormat value={data.docId?.amount} displayType={'text'} thousandSeparator={true} renderText={text => <span className="">{text}</span>} />
-                            </div>
-                            
-                            <div className="profData">
-                                <span>Payment Plan</span>
-                                <span>{data.docId?.paymentPlan}</span>
-                            </div>
-
-                            <div className="profData">
-                                <span>Requested by</span>
-                                <span>{data?.requesterId?.fullName}</span>
-                            </div>
-                            
-                            <div className="profData">
-                                <span>Commission</span>
-                                <NumericFormat value={data?.commission} displayType={'text'} thousandSeparator={true} renderText={text => <span className="">{text}</span>} />
-                            </div>
-
-                            <div className="profData">
-                                <span>Commission Status</span>
-                                <span>{data?.status}</span>
-                            </div>
+                
+                <div className="dueParent">
+                                    {/* <img src={`${configData.PIC_URL}/`} className="img-fluid perfImg" alt="user"/> */}
+                                    <span className="perfName">Client: {data?.docId?.clientId?.fullName}</span>
+                                    <div className="view-more">
+                                        <span>Refered by: {data?.docId?.marketerId?.fullName}</span>
+                                    </div>
+                                    <div className="view-acc">
+                                        <span  onClick={()=> setDisplayAcc(!displayAcc)}>view account details</span>
+                                    </div>
+                            {displayAcc &&
+                                <div className="profInfo">
+                                    <div className="profInfoData">
+                                        <div className="profData">
+                                            <span>Account Name</span>
+                                            <span>{data?.requesterId?.accountName}</span>
+                                        </div>
+                                        <div className="profData">
+                                            <span>Account Number</span>
+                                            <span>{data?.requesterId?.accountNumber}</span>
+                                        </div>
+                                        <div className="profData">
+                                            <span>Bank Name</span>
+                                            <span>{data?.requesterId?.bankName}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            }
 
 
-                            {data?.status === 'success' || data?.status === 'rejected' && 
-                                    <div className="profData">
-                                        <span>Date {data?.status}</span>
-                                        <span>{format(new Date(data?.dateOfPayment), 'MMMM, do, yyy')}</span>
+                                <div className="profInfo">
+
+                                    <div className="profInfoData">
+                                        <div className="profData">
+                                            <span>Commission type</span>
+                                            <span>{data?.requestType === 'refCommision' ? 'Refereer Commission' : 'My Commission'}</span>
+                                        </div>
+
+                                        <div className="profData">
+                                            <span>Estate</span>
+                                            <span>{data.docId?.estateId?.name}</span>
+                                        </div>
+
+                                        <div className="profData">
+                                            <span>Property Price</span>
+                                            <NumericFormat value={data.docId?.amount} displayType={'text'} thousandSeparator={true} renderText={text => <span className="">{text}</span>} />
+                                        </div>
+                                        
+                                        <div className="profData">
+                                            <span>Payment Plan</span>
+                                            <span>{data.docId?.paymentPlan}</span>
+                                        </div>
+
+                                        <div className="profData">
+                                            <span>Requested by</span>
+                                            <span>{data?.requesterId?.fullName}</span>
+                                        </div>
+                                        
+                                        <div className="profData">
+                                            <span>Commission</span>
+                                            <NumericFormat value={data?.commission} displayType={'text'} thousandSeparator={true} renderText={text => <span className="">{text}</span>} />
+                                        </div>
+
+                                        <div className="profData">
+                                            <span>Commission Status</span>
+                                            <span>{data?.status}</span>
+                                        </div>
+
+
+                                        {data?.status === 'success' || data?.status === 'rejected' && 
+                                                <div className="profData">
+                                                    <span>Date {data?.status}</span>
+                                                    <span>{format(new Date(data?.dateOfPayment), 'MMMM, do, yyy')}</span>
+                                                </div>
+                                        }
+
+                                    <div className="view-more">
+                                        <span  onClick={()=> navigate(data.docId)}>view more</span>
+                                    </div>
+                                {data?.status === 'pending' && 
+                                    <div className="d-flex mt-4" style={{float:'right'}}>
+                                        <Button onClick={()=> rejectCommissions(data)} variant="secondary" size="sm">Reject</Button>
+
+                                        <Button  onClick={()=> paidCommissions(data)} variant="primary" size="sm">Paid</Button>
+
                                     </div>
                             }
 
-                          <div className="view-more">
-                              <span  onClick={()=> navigate(data.docId)}>view more</span>
-                          </div>
-                    {data?.status === 'pending' && 
-                          <div className="d-flex mt-4" style={{float:'right'}}>
-                               <Button onClick={()=> rejectCommissions(data)} variant="secondary" size="sm">Reject</Button>
 
-                               <Button  onClick={()=> paidCommissions(data)} variant="primary" size="sm">Paid</Button>
-
-                          </div>
-                   }
+                                    </div>
+                                </div>
+                                
+                            </div>
 
 
-                        </div>
-                    </div>
-                    
                 </div>
 
 
-    </div>
 
-
-
-</Modal.Body>
-</Modal>
+            </Modal.Body>
+      </Modal>
 
 
 
