@@ -11,7 +11,7 @@ import { toast } from "react-toastify";
 
 function Estates() {
 
-    const socket = io('http://localhost:9001', {
+    const socket = io(`${configData.URL}`, {
        
     });
 
@@ -89,7 +89,7 @@ function Estates() {
     const getEstates = async () => {
 
         setisBtnLoading(true);
-      const response = await axios.get(`${configData.TEST_URL}/estate/getEstate`);
+      const response = await axios.get(`${configData.SERVER_URL}/estate/getEstate`);
       console.log(response.data.data);
       setEstate(response.data.data);
       setAll(true);
@@ -240,7 +240,7 @@ function Estates() {
                                       return <>
 
                                       <div onClick={() => editEstate(e)} className="estCad" key={e._id}>
-                                          <img crossorigin="anonymous" src={`${configData.TEXT_IMG}/${e.image}`} className="d-block w-100 proImg" alt={e.name}/>
+                                          <img crossorigin="anonymous" src={`${configData.PIC_URL}/${e.image}`} className="d-block w-100 proImg" alt={e.name}/>
                                           <div className="itemDetails">
                                               <span>{e.location}</span>
                                               <h4>{e.name}</h4>

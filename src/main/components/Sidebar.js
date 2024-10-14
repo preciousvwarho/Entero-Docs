@@ -10,7 +10,7 @@ import EditProfile from './EditProfile';
 import { Context } from '../../Store';
 import addNotification  from 'react-push-notification';
 import io from 'socket.io-client';
-const socket = io("http://localhost:9001");
+const socket = io(`${configData.URL}`);
 
 function Sidebar() {
     const location = useLocation();

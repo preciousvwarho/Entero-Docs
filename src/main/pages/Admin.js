@@ -10,7 +10,7 @@ import { ThreeDots, ColorRing } from 'react-loader-spinner';
 import { toast } from "react-toastify";
 
 import io from 'socket.io-client';
-const socket = io("http://localhost:9001");
+const socket = io(`${configData.URL}`);
 
 function Admin() {
 
