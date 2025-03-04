@@ -34,6 +34,7 @@ function Clients() {
     const [nClients, setNclients] = useState([]);
     const [isBtnLoading, setisBtnLoading] = useState(false);
     const [isPageLoading, setIsPageLoading] = useState(false);
+      const [page, setPage] = useState("all");
 
     const [selectedImage, setSelectedImage] = useState(null);
 
@@ -73,8 +74,6 @@ function Clients() {
         }
         getClients(pageNumb);
     };
-
-
 
     const handleImageChange = (e) => {
         const file = e.target.files[0];
@@ -136,7 +135,7 @@ function Clients() {
 
     const getClients = async () => {
 
-        return fetch(`${configData.TEST_URL}/client/getAllClients`, {
+        return fetch(`${configData.SERVER_URL}/client/getAllClients`, {
             method: "get",
             headers: {
                 Accept: "application/json",
@@ -146,6 +145,7 @@ function Clients() {
         })
             .then((response) => response.json())
             .then((responseJson) => {
+                console.log("Clients gotten: ", responseJson.data)
                 setClients(responseJson.data);
                 setNclients(responseJson.data);
             })
@@ -189,7 +189,6 @@ function Clients() {
 
     }
 
-
     const navigation = (data) => {
         history.push({
             pathname: `/Client-Details/${data?._id}`,
@@ -200,11 +199,27 @@ function Clients() {
     const [search, setSearch] = useState('');
 
 
-    const handleAdminSearch = (query) => {
-        const filteredResults = nClients.filter((nClients) =>
-            nClients?.fullName.toLowerCase().includes(query.toLowerCase())
-        );
-        setClients(filteredResults);
+    const handleClientSearch = async(query) => {
+        try {
+            setIsPageLoading(true);
+      
+            const response = await fetch(`${configData.SERVER_URL}/client/searchClient?page=${page}&sizePerPage=${sizePerPage}&search=${query}`, {
+              method: "post",
+              headers: {
+                Accept: "application/json",
+                "x-auth-token": window.localStorage.getItem("token")
+              }
+            })
+      
+            const responseJson = await response.json();
+            setTotalPages(responseJson.totalPages)
+            setClients(responseJson.data);
+            setIsPageLoading(false);
+      
+          } catch (error) {
+            console.log(error);
+            setIsPageLoading(false);
+          }
     };
 
     const handleDocChange = (e) => {
@@ -213,7 +228,7 @@ function Clients() {
 
         // Perform search when at least 2 characters are entered
         if (query.length >= 2) {
-            handleAdminSearch(query);
+            handleClientSearch(query);
         } else {
             setClients(nClients); // Clear results if the search query is less than 2 characters
         }
@@ -301,7 +316,9 @@ function Clients() {
                               return <>
                                 <tr key={index + 1} onClick={() => navigation(data)} className="tr">
                                   <td>
-                                    <img crossorigin="anonymous" src={`${configData.PIC_URL}/${data.passport}`} className="img-fluid tableImg" alt="user" />
+                                    <img 
+                                    // crossorigin="anonymous"
+                                     src={`${configData.PIC_URL}/${data.passport}`} className="img-fluid tableImg" alt="user" />
                                   </td>
                                   <td>{data?.fullName}</td>
                                   <td>{data?.email}</td>
@@ -318,7 +335,7 @@ function Clients() {
 
                       : <div className="col-md-12 py-5">
 
-                        <h6 className="text-center">Client does not have another document</h6>
+                        <h6 className="text-center">No Client found</h6>
 
                       </div>}
 
@@ -326,7 +343,7 @@ function Clients() {
                                 {/* {clients.map(c => (
                                     <div onClick={() => navigation(c)} className="userData">
                                         <div className="userDataOne">
-                                            <Image crossorigin="anonymous" src={`${configData.TEXT_IMG}/${c.passport}`} className="useDataImg" alt="" />
+                                            <Image crossorigin="anonymous" src={`${configData.PIC_URL}/${c.passport}`} className="useDataImg" alt="" />
                                             <div className="userDataName">
                                                 <span>{c?.fullName}</span>
                                                 <span>{c?.email}</span>
@@ -541,7 +558,7 @@ function Clients() {
 
                                 <div className="col-md">
                                     <div className="form-floating mt-3">
-                                        <input placeholder="Email Address" type="text" className="h-auto form-control " name="email" ref={register({ required: true })} />
+                                        <input placeholder="Email Address" type="text" className="h-auto form-control " name="email" ref={register({ required: false })} />
                                         {errors.email && <span className="alert alert-danger" role="alert">Email Required</span>}
                                         <label for="floatingInput">Email Address</label>
                                     </div>

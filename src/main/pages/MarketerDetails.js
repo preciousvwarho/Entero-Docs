@@ -8,7 +8,7 @@ import { LongArrow } from './svg/Svg';
 import { useHistory, useParams } from 'react-router-dom';
 import { NumericFormat } from 'react-number-format';
 import { format } from 'date-fns';
-import { FaRegEdit, FaTrashAlt } from "react-icons/fa";
+import { FaRegEdit, FaTrashAlt, FaLock, FaLockOpen } from "react-icons/fa";
 import CommissionComp from "./Components/CommissionComp";
 import TransComp from "./Components/TransComp";
 import Refereer from "./Components/Refereer";
@@ -62,8 +62,8 @@ function MarketerDetails() {
 
   useEffect(() => {
     socket.on('marketer-added', (param) => {
-      if(param.data?.referralId == data?._id) {
-            getRefMarketer();
+      if (param.data?.referralId == data?._id) {
+        getRefMarketer();
       }
     });
 
@@ -79,6 +79,7 @@ function MarketerDetails() {
   const [isPageLoading, setIsPageLoading] = useState(false);
   const [isComLoading, setIsComLoading] = useState(false);
   const [isRefLoading, setIsRefLoading] = useState(false);
+  const [searchLoading, setSearchLoading] = useState(false);
 
   // console.log("data", JSON.stringify(data, null, 2))
 
@@ -103,6 +104,42 @@ function MarketerDetails() {
 
   const handleClose = () => setShow(false);
   const handleShow = () => setShow(true);
+
+  const lockUpliner = async (value) => {
+
+    if (!window.confirm(`are you sure want to ${value} refereer's commission?`)) {
+      return
+    }
+    setisBtnLoading(true)
+
+    try {
+      const response = await fetch(`${configData.SERVER_URL}/marketer/updateCanWithdraw/${id}?value=${value}`, {
+        method: "put",
+        headers: {
+          Accept: "application/json",
+          "Content-Type": "application/json",
+          "x-auth-token": window.localStorage.getItem("token")
+        },
+        body: JSON.stringify({ data })
+      });
+      const responseJson = await response.json();
+
+      if (responseJson.status === "success") {
+        setData(responseJson.data);
+        setisBtnLoading(false);
+        toast.success(responseJson.message);
+        offCanvasClose()
+      }
+      if (responseJson.status === "error") {
+        setisBtnLoading(false);
+        toast.error(responseJson.message);
+      }
+    } catch (error) {
+      setisBtnLoading(false);
+      console.error(error);
+    }
+
+  }
 
 
   const getMarketerDetails = async () => {
@@ -190,8 +227,6 @@ function MarketerDetails() {
   const updateMarketer = async (data) => {
 
     setisBtnLoading(true)
-
-
 
     try {
       const response = await fetch(`${configData.SERVER_URL}/marketer/update/${id}`, {
@@ -376,14 +411,33 @@ function MarketerDetails() {
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState([]);
 
-  const handleSearch = (query) => {
-    const filteredResults = marketers.filter((marketer) =>
-      marketer.fullName.toLowerCase().includes(query.toLowerCase())
-    );
-    setSearchResults(filteredResults);
+  const handleSearch = async (query) => {
+
+    try {
+      setSearchLoading(true);
+
+      const response = await fetch(`${configData.SERVER_URL}/marketer/searchRefMarketer?search=${query}`, {
+        method: "post",
+        headers: {
+          Accept: "application/json",
+          "x-auth-token": window.localStorage.getItem("token")
+        }
+      })
+
+      const responseJson = await response.json();
+      
+    console.log(JSON.stringify(responseJson, null, 2))
+
+      setSearchResults(responseJson.data);
+      setSearchLoading(false);
+
+    } catch (error) {
+      console.log(error);
+      setSearchLoading(false);
+    }
   };
 
-  const handleChange = (e) => {
+  const handleChange = async (e) => {
     const query = e.target.value;
     setSearchQuery(query);
 
@@ -479,6 +533,8 @@ function MarketerDetails() {
     history.push(`/${link}`);
   }
 
+  // console.log(JSON.stringify(data, null, 2))
+
 
 
   return (
@@ -514,7 +570,9 @@ function MarketerDetails() {
                 <div className="userSecOne">
                   <div className="userDataOne">
 
-                    <Image crossorigin="anonymous" src={`${configData.TEXT_IMG}/${data.profImage}`} className="useDataImg" alt="" />
+                    <Image
+                      // crossorigin="anonymous"
+                      src={`${configData.PIC_URL}/${data.profImage}`} className="useDataImg" alt="" />
                     <div className="userDataName">
                       <span>{data?.fullName}</span>
                       <div style={{ display: 'flex', gap: '20px' }}>
@@ -550,7 +608,9 @@ function MarketerDetails() {
 
                       <div className="d-flex  justify-content-center align-items-center">
                         {data?.referralId ? <>
-                          <Image crossorigin="anonymous" src={`${configData.TEXT_IMG}/${data?.referralId?.profImage}`} className="refImg" alt="" />
+                          <Image
+                            // crossorigin="anonymous"
+                            src={`${configData.PIC_URL}/${data?.referralId?.profImage}`} className="refImg" alt="" />
                           <span className="refName">{data?.referralId?.fullName}</span>
 
                           {(state.profile.role === 'admin' || (state.profile.permission === 'marketers' && ['delete'].some(substring => state.profile.permissionType.includes(substring)))) && (
@@ -562,6 +622,20 @@ function MarketerDetails() {
                             <span className="refName">Add Referer</span>
                           </>)}
                         </>}
+
+
+                        {data?.referralId && <>
+
+                          {(state.profile.role === 'admin' || (state.profile.permission === 'marketers' && ['add'].some(substring => state.profile.permissionType.includes(substring)))) && (<>
+                            {data?.refererComActive ?
+                              <FaLockOpen onClick={() => lockUpliner('lock')} style={{ fontSize: "16px", marginLeft: '25px', cursor: "pointer", color: '#017D3D' }} /> :
+                              <FaLock onClick={() => lockUpliner('unlock')} style={{ fontSize: "16px", marginLeft: '25px', cursor: "pointer", color: '#F23030' }} />
+                            }
+                          </>)}
+
+                        </>}
+
+
                       </div>
 
                     </>)}
@@ -599,7 +673,6 @@ function MarketerDetails() {
                   </>)}
                 </div>
               </div>
-
 
               <div className="userOverview">
                 <div className="user-summary">
@@ -727,7 +800,9 @@ function MarketerDetails() {
                                     ? latestTrans.map((t, index) => {
                                       return <>
                                         <tr className="tr" key={index + 1} onClick={() => navigate(t)}>
-                                          <td><Image crossorigin="anonymous" src={`${configData.PIC_URL}/${t?.clientId?.passport}`} className="img-fluid tableImg" alt="user" />
+                                          <td><Image
+                                            // crossorigin="anonymous"
+                                            src={`${configData.PIC_URL}/${t?.clientId?.passport}`} className="img-fluid tableImg" alt="user" />
                                           </td>
                                           <td>{t?.clientId?.fullName}</td>
                                           <td>{t?.estateId?.name}</td>
@@ -889,12 +964,12 @@ function MarketerDetails() {
                             ariaLabel="three-dots-loading"
                             wrapperStyle={{}}
                             wrapperClass="" />
-                         </div>
+                        </div>
 
                       </>
 
                         : <>
-                        <div className='docList'>
+                          <div className='docList'>
                             <div class="col-12 mt-3">
                               <Refereer refMarketers={refMarketers} />
                             </div>
@@ -944,7 +1019,9 @@ function MarketerDetails() {
               {searchResults.map((result) => (
 
                 <div onClick={() => selectReferer(result)} className="searchDiv d-flex align-items-center my-4 mx-4">
-                  <Image crossorigin="anonymous" src={`${configData.TEXT_IMG}/${result.profImage}`} className="serchImg" alt="" />
+                  <Image
+                    // crossorigin="anonymous"
+                    src={`${configData.PIC_URL}/${result.profImage}`} className="serchImg" alt="" />
                   <span className="serchName">{result?.fullName}</span>
                 </div>
               ))}

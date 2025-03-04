@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import { Image, Button, Row, Col, Modal, Form } from 'react-bootstrap';
@@ -81,7 +81,7 @@ function Admin() {
 
     try {
 
-      return fetch(`${configData.TEST_URL}/admin/addAdmin`, {
+      return fetch(`${configData.SERVER_URL}/admin/addAdmin`, {
         method: "post",
         headers: {
           "x-auth-token": window.localStorage.getItem("token")
@@ -116,23 +116,23 @@ function Admin() {
 
   }
 
-   const getAdmin = async () => {
-   try {
-    setIsPageLoading(true);
-    setPage('all')
-        const response = await axios.get(`${configData.SERVER_URL}/admin/getAllAdmin`, {
-          headers: {
-            "x-auth-token":  window.localStorage.getItem("token")
-          }
-        });
-        setAdmin(response.data.data);
-        setAdmData(response.data.data);
-        setIsPageLoading(false);
-   } catch (error) {
-       console.log(error);
-   }
+  const getAdmin = async () => {
+    try {
+      setIsPageLoading(true);
+      setPage('all')
+      const response = await axios.get(`${configData.SERVER_URL}/admin/getAllAdmin`, {
+        headers: {
+          "x-auth-token": window.localStorage.getItem("token")
+        }
+      });
+      setAdmin(response.data.data);
+      setAdmData(response.data.data);
+      setIsPageLoading(false);
+    } catch (error) {
+      console.log(error);
+    }
 
-   }
+  }
 
   // const [limit, setLimit] = useState(20); // The limit of data per request
   // const [offSet, setOffSet] = useState(0); // The current offset
@@ -191,7 +191,7 @@ function Admin() {
 
   useEffect(() => {
     getAdmin();
-   // window.addEventListener('scroll', handleScroll);
+    // window.addEventListener('scroll', handleScroll);
   }, []);
 
 
@@ -222,10 +222,27 @@ function Admin() {
   };
 
   useEffect(() => {
-    console.log(permissionTypes)
+    setContactType(adminData?.contact)
+    setValue("contact", adminData?.contact || false); // Ensure default value
+  }, [adminData, setValue]);
+
+  const [contactType, setContactType] = useState(adminData?.contact || false);
+
+  // console.log("contact Type", contactType)
+
+  const handleContactChange = (e) => {
+    const isChecked = e.target.checked;
+    setContactType(isChecked);
+    setValue("contact", isChecked);
+  };
+
+  useEffect(() => {
   }, [permissionTypes])
 
   const updateUser = async (data) => {
+
+    // console.log("contact Type", contactType);
+    // return
 
     setisBtnLoading(true);
 
@@ -245,7 +262,8 @@ function Admin() {
           role: data.role,
           position: data.position,
           permission: data.role === 'admin' ? null : data.permission,
-          permissionType: data.role === 'admin' ? null : permissionTypes.join(', ')
+          permissionType: data.role === 'admin' ? null : permissionTypes.join(', '),
+          contact: contactType
         })
       });
 
@@ -271,7 +289,7 @@ function Admin() {
 
   }
 
-  const blockUnBlock = async(id) => {
+  const blockUnBlock = async (id) => {
     if (!window.confirm("are you sure you want to unblock this user?")) {
       return
     }
@@ -291,17 +309,17 @@ function Admin() {
 
     // axios.put(`${configData.SERVER_URL}/admin/blockAdmin/${adminData._id}`)
     //   .then((response) => {
-         console.log(response);
-        if (responseData.status === "success") {
-          setisBtnLoading(false)
-          setAdmiData([])
-          toast.success(responseData.message);
-        }
-        if (responseData.status === "error") {
-          setisBtnLoading(false)
-          toast.error(responseData.message);
-        }
-      // });
+    console.log(response);
+    if (responseData.status === "success") {
+      setisBtnLoading(false)
+      setAdmiData([])
+      toast.success(responseData.message);
+    }
+    if (responseData.status === "error") {
+      setisBtnLoading(false)
+      toast.error(responseData.message);
+    }
+    // });
 
   }
 
@@ -372,6 +390,44 @@ function Admin() {
       setAdmin(admData); // Clear results if the search query is less than 2 characters
     }
   };
+
+
+
+  const [image, setImage] = useState('');
+  const fileInputRef = useRef(null);
+
+  const handleImageClick = () => {
+    fileInputRef.current.click(); // Opens file selector when image is clicked
+  };
+
+  const handleFileChange = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    setImage(file);
+
+    // Prepare FormData
+    const formData = new FormData();
+    formData.append("profImage", file);
+
+    try {
+      const response = await axios.put(
+        `${configData.SERVER_URL}/admin/imageUpload/${adminData._id}`,
+        formData
+      );
+
+      if (response.data.status === "success") {
+        alert(response.data.message);
+      } else {
+        alert(response.data.message);
+      }
+    } catch (error) {
+      console.error("Upload error:", error);
+      alert("Failed to upload image");
+    }
+  };
+
+
 
   return (
     <>
@@ -451,7 +507,9 @@ function Admin() {
                   {admin.map(admin => (
                     <div onClick={() => setAdmiData(admin)} className="userData">
                       <div className="userDataOne">
-                        <Image crossorigin="anonymous" src={`${configData.PIC_URL}/${admin.profImage}`} className="useDataImg" alt="" />
+                        <Image
+                          // crossorigin="anonymous"
+                          src={`${configData.PIC_URL}/${admin.profImage}`} className="useDataImg" alt="" />
                         <div className="userDataName">
                           <span>{admin.fullName}</span>
                           <span>{admin.email}</span>
@@ -490,8 +548,22 @@ function Admin() {
 
                 <div className="user-details">
 
-                  <Image crossorigin="anonymous" src={`${configData.PIC_URL}/${adminData.profImage}`} className="useDataImg2" alt="" />
+                  <Image
+                    src={`${configData.PIC_URL}/${adminData.profImage}`}
+                    className="useDataImg2"
+                    alt="Profile"
+                    onClick={handleImageClick}
+                    style={{ cursor: "pointer" }}
+                  />
+                  <input
+                    type="file"
+                    ref={fileInputRef}
+                    style={{ display: "none" }}
+                    accept="image/*"
+                    onChange={handleFileChange}
+                  />
                   <div className="userDataName">
+
                     <span>{adminData.fullName}</span>
                     <span>{adminData.email}</span>
                   </div>
@@ -593,6 +665,17 @@ function Admin() {
                         type={'radio'} />
 
 
+                      <Form.Check
+                        inline
+                        disabled
+                        label="Media"
+                        name="permission"
+                        value="media"
+                        ref={register({ required: true })}
+                        defaultChecked={adminData ? adminData?.permission === 'media' : false}
+                        type={'radio'} />
+
+
 
 
                       <div className="" style={{ marginLeft: '10%' }}>
@@ -636,6 +719,23 @@ function Admin() {
 
                       </div>
 
+                    </div>
+
+
+
+                    <div className="mt-4 mb-4">
+                      <h4>Contact Status</h4>
+
+                      <Form.Check
+                        inline
+                        disabled
+                        name="contacts"
+                        label="Is user added to Whatsapp list"
+                        // value={adminData && adminData?.contact}
+                        defaultChecked={adminData?.contact}
+                        ref={register({ required: false })}
+                        type={'checkbox'}
+                      />
                     </div>
 
 
@@ -795,6 +895,17 @@ function Admin() {
                       ref={register({ required: true })}
                       onChange={handlePermissionChange}
                       checked={selectedPermission === "documents"}
+                      type="radio"
+                    />
+
+                    <Form.Check
+                      inline
+                      label="Media"
+                      value="media"
+                      name="permission"
+                      ref={register({ required: true })}
+                      onChange={handlePermissionChange}
+                      checked={selectedPermission === "media"}
                       type="radio"
                     />
 
@@ -988,6 +1099,16 @@ function Admin() {
                       defaultChecked={adminData ? adminData?.permission === 'documents' : false}
                       type={'radio'} />
 
+
+                    <Form.Check
+                      inline
+                      label="Media"
+                      name="permission"
+                      value="media"
+                      ref={register({ required: true })}
+                      defaultChecked={adminData ? adminData?.permission === 'media' : false}
+                      type={'radio'} />
+
                     <div className="" style={{ marginLeft: '10%' }}>
                       <Form.Check
                         inline
@@ -1002,6 +1123,7 @@ function Admin() {
                         }
                         onChange={handlePermissionTypeChange}
                         type={'checkbox'} />
+
                       <Form.Check
                         inline
                         label="edit"
@@ -1037,9 +1159,19 @@ function Admin() {
               }
 
 
-
-
               <div className="mt-4 mb-4">
+                <h4>Add user to contact</h4>
+
+                <Form.Check
+                  inline
+                  label="Add to Whatsapp Contact"
+                  name="contact"
+                  value={contactType}
+                  ref={register({ required: false })}
+                  defaultChecked={contactType}
+                  type={'checkbox'}
+                  onChange={handleContactChange}
+                />
               </div>
 
             </div>

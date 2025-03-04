@@ -15,6 +15,10 @@ const Commissions = () => {
     const [miniNav, setMiniNav] = useState('all');
     const [commission, setCommission] = useState([]);
     const [newCommission, setNewCommission] = useState([]);
+    const [docPage, setDocPage] = useState(1);
+    const [sizePerPage, setSizePerPage] = useState(5);
+    const [totalPages, setTotalPages] = useState(null);
+    const [isPageLoading, setisPageLoading] = useState(false);
 
     const [searchDoc, setSearchDoc] = useState('');
 
@@ -22,18 +26,36 @@ const Commissions = () => {
         socket.on('commission-request', (param) => {
             getCommision();
         });
-    
+
         return () => {
-          socket.off('commission-request');
+            socket.off('commission-request');
         };
-      }, []);
-    
-  
+    }, []);
 
-    const getCommision = async () => {
+    const onPageChange = (pageNumb) => {
+        setDocPage(pageNumb);
+        getCommision(pageNumb);
+    };
+
+
+    const filterByStatus = (status) => {
+        setMiniNav(status);
+        if (status !== "all") {
+            // const filteredData = newCommission.filter((data) => data.status === status);
+            // setCommission(filteredData);
+            getCommision(1)
+            return
+        }
+        getCommision(1)
+    };
+
+
+
+    const getCommision = async (pageNumb) => {
         try {
+            setisPageLoading(true);
 
-            return fetch(`${configData.SERVER_URL}/commission/marketers`, {
+            return fetch(`${configData.SERVER_URL}/commission/marketers?page=${pageNumb}&sizePerPage=${sizePerPage}&pageType=${miniNav}`, {
                 method: "get",
                 headers: {
                     Accept: "application/json",
@@ -45,9 +67,13 @@ const Commissions = () => {
                 .then((responseJson) => {
                     setCommission(responseJson.data);
                     setNewCommission(responseJson.data);
+                    setTotalPages(responseJson.totalPages)
+                    setisPageLoading(false);
+                    // setFilteredComm(responseJson.data);
                 })
                 .catch((error) => {
                     console.error(error);
+                    setisPageLoading(false);
                 });
 
         } catch (error) {
@@ -56,9 +82,23 @@ const Commissions = () => {
     }
 
     useEffect(() => {
-        getCommision();
+        getCommision(docPage);
     }, []);
 
+
+        const [pageNumberRange, setPageNumberRange] = useState([]);
+    
+        useEffect(() => {
+            updatePageNumberRange();
+        }, [docPage, totalPages]);
+    
+        const updatePageNumberRange = () => {
+            const rangeStart = Math.max(1, docPage - 2);
+            const rangeEnd = Math.min(totalPages, rangeStart + 4);
+    
+            setPageNumberRange([...Array(rangeEnd - rangeStart + 1).keys()].map(num => num + rangeStart));
+        };
+    
 
     const handleComSearch = (query) => {
         const filteredResults = commission.filter((com) =>
@@ -78,17 +118,6 @@ const Commissions = () => {
             setCommission(newCommission); // Clear results if the search query is less than 2 characters
         }
     };
-
-    const filterByStatus = (status) => {
-        setMiniNav(status);
-        if (status !== "all") {
-            const filteredData = newCommission.filter((data) => data.status === status);
-            setCommission(filteredData);
-            return
-        }
-        setCommission(newCommission);
-    };
-
 
 
 
@@ -164,6 +193,30 @@ const Commissions = () => {
 
                                         <CommissionComp commission={commission} />
 
+                                    </div>
+
+
+                                    <div className="w-100 mt-4 d-flex justify-content-end align-items-center">
+
+
+                                        {totalPages > 1 &&
+
+                                            <nav aria-label="...">
+                                                <ul className="pagination">
+                                                    <li className={`page-item ${docPage === 1 ? 'disabled' : ''}`}>
+                                                        <a className="page-link" href="#" onClick={() => onPageChange(docPage - 1)}>Previous</a>
+                                                    </li>
+                                                    {pageNumberRange.map(pageNum => (
+                                                        <li key={pageNum} className={`page-item ${pageNum === docPage ? 'active' : ''}`}>
+                                                            <a className="page-link" href="#" onClick={() => onPageChange(pageNum)}>{pageNum}</a>
+                                                        </li>
+                                                    ))}
+                                                    <li className={`page-item ${docPage === totalPages ? 'disabled' : ''}`}>
+                                                        <a className="page-link" href="#" onClick={() => onPageChange(docPage + 1)}>Next</a>
+                                                    </li>
+                                                </ul>
+                                            </nav>
+                                        }
                                     </div>
                                 </div>
 

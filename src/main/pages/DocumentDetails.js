@@ -27,23 +27,23 @@ function DocumentDetails() {
     const { id } = useParams();
     const { register, handleSubmit, reset, setValue, errors } = useForm();
 
-    useEffect(() => {
-        socket.on('document-activity', (param) => {
+    // useEffect(() => {
+    //     socket.on('document-activity', (param) => {
 
-            console.log(param, "clientId data")
+    //         console.log(param, "clientId data")
 
-            if (param.data._id === id) {
-                getSingleDocs();
-            }
-            if (param.data?.clientId === data?.clientId._id) {
-                getDocs();
-            }
-        });
+    //         if (param.data._id === id) {
+    //             getSingleDocs();
+    //         }
+    //         if (param.data?.clientId === data?.clientId._id) {
+    //             getDocs();
+    //         }
+    //     });
 
-        return () => {
-            socket.off('document-activity');
-        };
-    }, []);
+    //     return () => {
+    //         socket.off('document-activity');
+    //     };
+    // }, []);
 
 
     useEffect(() => {
@@ -60,6 +60,7 @@ function DocumentDetails() {
 
 
     const [showComm, setShowComm] = useState(false);
+    const [showGenComm, setShowGenComm] = useState(false);
     const [show, setShow] = useState(false);
     const [page, setPage] = useState("overview");
     const [plots, setPlots] = useState([]);
@@ -79,7 +80,10 @@ function DocumentDetails() {
 
     const handleClose = () => setShow(false);
     const handleShow = () => setShow(true);
-
+    
+    
+    const handleGenComClose = () => setShowGenComm(false);
+    const handleGenComShow = () => setShowGenComm(true);
 
     const handleComClose = () => setShowComm(false);
     const handleComShow = () => setShowComm(true);
@@ -431,7 +435,7 @@ function DocumentDetails() {
                 .then((response) => response.json())
                 .then((responseJson) => {
                     // console.log("response data", JSON.stringify(responseJson.data, null, 2))
-                    setDocs(responseJson.data);
+                    // setDocs(responseJson.data);
                 })
                 .catch((error) => {
                     console.error(error);
@@ -469,7 +473,6 @@ function DocumentDetails() {
     useEffect(() => {
         getPlots();
         getPayment();
-        getDocs();
     }, []);
 
     const totalAmount = payments.reduce((sum, p) => sum + p.amount, 0);
@@ -653,42 +656,93 @@ function DocumentDetails() {
 
     const [agentCommission, setAgentCommission] = useState(data?.commission);
     const [uplinerCommission, setUplinerCommission] = useState(data?.uplinerCommission);
+    const [genCommission, setGenCommission] = useState('')
 
-    const addDoc = async (e) => {
-        // e.preventDefault();
+    const addDocCom = async () => {
+        try {
+            // e.preventDefault();
 
-        return fetch(`${configData.TEST_URL}/document/update/${data?._id}`, {
-            method: "put",
-            headers: {
-                Accept: "application/json",
-                "Content-Type": "application/json",
-                "x-auth-token": window.localStorage.getItem("token")
-            },
-            body: JSON.stringify({
-                commission: agentCommission,
-                uplinerCommission: uplinerCommission
+            return fetch(`${configData.SERVER_URL}/document/update/${data?._id}`, {
+                method: "put",
+                headers: {
+                    Accept: "application/json",
+                    "Content-Type": "application/json",
+                    "x-auth-token": window.localStorage.getItem("token")
+                },
+                body: JSON.stringify({
+                    commission: agentCommission,
+                    uplinerCommission: uplinerCommission
+                })
             })
-        })
-            .then((response) => response.json())
-            .then((responseJson) => {
+                .then((response) => response.json())
+                .then((responseJson) => {
 
-                if (responseJson.status === "success") {
+                    if (responseJson.status === "success") {
+                        setisBtnLoading(false)
+                        toast.success(responseJson.message);
+                        getSingleDocs();
+                        handleComClose()
+                    }
+                    if (responseJson.status === "error") {
+                        setisBtnLoading(false)
+                        toast.error(responseJson.message);
+                        // offCanvasClose()
+                    }
+                })
+                .catch((error) => {
                     setisBtnLoading(false)
-                    toast.success(responseJson.message);
-                    getSingleDocs();
-                    handleComClose()
-                }
-                if (responseJson.status === "error") {
-                    setisBtnLoading(false)
-                    toast.error(responseJson.message);
-                    // offCanvasClose()
-                }
+                    console.error(error);
+                });
+
+
+
+        } catch (error) {
+            console.log(error);
+        }
+
+    }
+
+    const addCom = async() => {
+
+        try {
+            // e.preventDefault();
+
+            return fetch(`${configData.SERVER_URL}/commission/generate/commission/${data?.marketerId?._id}/${data?._id}`, {
+                method: "post",
+                headers: {
+                    Accept: "application/json",
+                    "Content-Type": "application/json",
+                    "x-auth-token": window.localStorage.getItem("token")
+                },
+                body: JSON.stringify({
+                    commission: genCommission,
+                })
             })
-            .catch((error) => {
-                setisBtnLoading(false)
-                console.error(error);
-            });
+                .then((response) => response.json())
+                .then((responseJson) => {
 
+                    if (responseJson.status === "success") {
+                        setisBtnLoading(false)
+                        toast.success(responseJson.message);
+                        getSingleDocs();
+                        handleComClose()
+                    }
+                    if (responseJson.status === "error") {
+                        setisBtnLoading(false)
+                        toast.error(responseJson.message);
+                        // offCanvasClose()
+                    }
+                })
+                .catch((error) => {
+                    setisBtnLoading(false)
+                    console.error(error);
+                });
+
+
+
+        } catch (error) {
+            console.log(error);
+        }
 
     }
 
@@ -725,7 +779,9 @@ function DocumentDetails() {
                                 <div className="userSecOne">
                                     <div className="userDataOne">
                                         <div style={{ display: "flex", justifyContent: "center", alignItems: "flex-end", flexDirection: "column", gap: "10px" }}>
-                                            <Image crossorigin="anonymous" src={`${configData.TEXT_IMG}/${data?.clientId?.passport}`} className="useDataImg" alt="" />
+                                            <Image
+                                                //  crossorigin="anonymous"
+                                                src={`${configData.PIC_URL}/${data?.clientId?.passport}`} className="useDataImg" alt="" />
                                             <DocArrow />
                                         </div>
                                         <div className="userDataName">
@@ -748,14 +804,15 @@ function DocumentDetails() {
                                     <span className="referedBy">Refered by: </span>
                                     <div className="d-flex  justify-content-center align-items-center">
                                         {data?.marketerId ? <>
-                                            <Image crossorigin="anonymous" src={`${configData.TEXT_IMG}/${data?.marketerId?.profImage}`} className="refImg" alt="" />
+                                            <Image
+                                                // crossorigin="anonymous"
+                                                src={`${configData.PIC_URL}/${data?.marketerId?.profImage}`} className="refImg" alt="" />
                                             <span className="refName">{data?.marketerId?.fullName}</span>
                                         </> : <>
                                             <span className="refName">No Referer</span>
                                         </>}
                                     </div>
                                 </div>
-
 
                             </div>
 
@@ -987,10 +1044,6 @@ function DocumentDetails() {
                                                                     <span className={"successStatus"}>Sold</span>
                                                                 </div>
 
-
-
-
-
                                                             </div>
                                                         </div>
                                                     ))}
@@ -1030,7 +1083,7 @@ function DocumentDetails() {
                                                                 return <>
                                                                     <tr key={index + 1} onClick={() => navigate(data)} className="tr">
                                                                         <td>
-                                                                            <img crossorigin="anonymous" src={`${configData.TEXT_IMG}/${data?.clientId?.passport}`} className="img-fluid tableImg" alt="user" />
+                                                                            {/* <img crossorigin="anonymous" src={`${configData.PIC_URL}/${data?.clientId?.passport}`} className="img-fluid tableImg" alt="user" /> */}
                                                                         </td>
                                                                         <td>{data?.clientId?.fullName}</td>
                                                                         <td>{data?.estateId?.name}</td>
@@ -1088,9 +1141,15 @@ function DocumentDetails() {
                                             </div>
 
                                             <div className="w-100 px-5 py-4">
-                                                <h4 className="h4">Commission Status</h4>
+                                                <div className="tranHeader d-flex align-items-center justify-content-between mx-3 pb-2">
+                                                    <h4 className="h4">Commission Status</h4>
+                                                    {(state.profile.role === 'admin' || (state.profile.permission === 'marketers' && ['add'].some(substring => state.profile.permissionType.includes(substring)))) && (
+                                                        <span onClick={handleGenComShow} className="plotBtn">Generate Commission</span>
+                                                    )}
+
+                                                </div>
                                                 <div className='d-flex'>
-                                                    <div className="doc-one px-5">
+                                                    <div className="doc-one px-5 py-4">
                                                         <span>Commission Amount:
                                                             <NumericFormat value={data?.commission} displayType={'text'} thousandSeparator={true} prefix={" ₦"} renderText={text => <span>{text}</span>} />
                                                         </span>
@@ -1120,7 +1179,7 @@ function DocumentDetails() {
                                                             </>}
                                                         </div>
                                                     </div>
-                                                    <div className="doc-one px-5">
+                                                    <div className="doc-one px-5 py-4">
                                                         <span>Upliner Commission Amount:
                                                             <NumericFormat value={data?.uplinerCommission} displayType={'text'} thousandSeparator={true} prefix={" ₦"} renderText={text => <span>{text}</span>} />
 
@@ -1192,10 +1251,9 @@ function DocumentDetails() {
 
                                 <div className="row g-2">
 
-                                    <div className="col-12">
+                                 <div className="col-12">
                                         <div className="form-floating mt-3">
-                                            <input placeholder="Commission" type="number" className="h-auto form-control " name="commission"
-                                                value={agentCommission}
+                                            <input placeholder="Commission" type="number" className="h-auto form-control " name="commission" value={agentCommission}
                                                 onChange={(e) => setAgentCommission(e.target.value)} />
                                             {errors.commission && <span className="alert alert-danger" role="alert">Commision is Required</span>}
                                             <label for="floatingInput">Agent Commission</label>
@@ -1207,7 +1265,7 @@ function DocumentDetails() {
                                             <input placeholder="Amount" type="number" className="h-auto form-control " name="uplinerCommission" value={uplinerCommission}
                                                 onChange={(e) => setUplinerCommission(e.target.value)} />
 
-                                            <label for="floatingInput">Upliner Commission</label>
+                                             <label for="floatingInput">Upliner Commission</label>
                                         </div>
                                     </div>
 
@@ -1216,7 +1274,7 @@ function DocumentDetails() {
 
                                 <div className="mt-4 mb-4">
                                     {agentCommission &&
-                                        <Button variant="primary" className="float-end" type="submit" disabled={isBtnLoading} onClick={addDoc}>
+                                        <Button variant="primary" className="float-end" type="submit" disabled={isBtnLoading} onClick={() => addDocCom()}>
                                             {isBtnLoading ? (<>Please Wait...</>) : (<>Submit</>)}
                                         </Button>
                                     }
@@ -1229,6 +1287,48 @@ function DocumentDetails() {
 
                 </Modal.Body>
             </Modal>
+
+
+            <Modal show={showGenComm} onHide={handleGenComClose}>
+
+                <Modal.Body>
+                    <div className="modal-body my-4">
+                        <div className="col-md-12">
+                            <h4 className="mt-2 mb-4 text-center">Commission </h4>
+                        </div>
+
+                        <div className="pt-2 pb-5" id="submit">
+
+                            <div className="adminForm">
+
+                                <div className="row g-2">
+
+                                 <div className="col-12">
+                                        <div className="form-floating mt-3">
+                                            <input placeholder="Commission" type="number" className="h-auto form-control " name="commission" value={genCommission}
+                                                onChange={(e) => setGenCommission(e.target.value)} />
+                                            {errors.commission && <span className="alert alert-danger" role="alert">Commision is Required</span>}
+                                            <label for="floatingInput">Commission</label>
+                                        </div>
+                                    </div>
+
+                                </div>
+
+
+                                <div className="mt-4 mb-4">
+                                        <Button variant="primary" className="float-end" type="submit" disabled={isBtnLoading} onClick={() => addCom()}>
+                                            {isBtnLoading ? (<>Please Wait...</>) : (<>Submit</>)}
+                                        </Button>
+                                </div>
+
+                            </div>
+
+                        </div>
+                    </div>
+
+                </Modal.Body>
+            </Modal>
+
 
             <Modal show={show} onHide={handleClose}>
 
@@ -1336,7 +1436,6 @@ function DocumentDetails() {
 
                                     <div className="row g-2">
                                         <div className="col-md">
-
                                             <div className="form-floating mt-3">
                                                 <input placeholder="amount" type="text" className="h-auto form-control " name="amount" onChange={(e) => setAmount(e.target.value)}
                                                 />
@@ -1346,18 +1445,14 @@ function DocumentDetails() {
                                         </div>
 
                                         <div className="col-md">
-
                                             <div class="form-floating">
                                                 <input type="date" id="datePaid" className="form-control mt-3" placeholder="Date Of Payment" name="datePaid"
                                                     onChange={(e) => setDatePaid(e.target.value)} />
                                                 {error === 'datePaid' && <span className="alert alert-danger" role="alert">Date of Payment Required</span>}
                                                 <label for="floatingSelect">Date Of Payment</label>
                                             </div>
-
                                         </div>
                                     </div>
-
-
 
                                     <div className="mt-4 mb-4">
 

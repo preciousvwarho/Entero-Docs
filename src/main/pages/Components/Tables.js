@@ -33,8 +33,9 @@ const MyTable = (props) => {
         }
       },
       formatter: (cell, row) => (
-        <img  crossorigin="anonymous" 
-          src={`${configData.TEXT_IMG}/${row.clientId.passport}`} 
+        <img  
+        // crossorigin="anonymous" 
+          src={`${configData.PIC_URL}/${row.clientId.passport}`} 
           className="img-fluid tableImg" 
           alt="img"
         />

@@ -1647,7 +1647,13 @@ span.fullName{
     height: 100%;
   }
 .layout{
-    width:100%; 
+    background-image: var(--background-img);
+    /* background-image:url(../img/fountain.png); */
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    width: 100%;
+    /* height: var(--layout-height); */
   }
   .layout svg{
     height: auto;

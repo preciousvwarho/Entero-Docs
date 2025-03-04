@@ -23,7 +23,7 @@ function Allocation() {
 
    const getEstates = async() => {
 
-    return fetch(`${configData.TEST_URL}/estate/getEstate`, {
+    return fetch(`${configData.SERVER_URL}/estate/getEstate`, {
         method: "get",
         headers: {
             Accept: "application/json",

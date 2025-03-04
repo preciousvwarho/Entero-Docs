@@ -111,7 +111,9 @@ const EditProfile = () => {
 
                     <div className="user-details">
 
-                            <Image  crossorigin="anonymous" src={`${configData.PIC_URL}/${state.profile?.profImage}`} className="useDataImg2" alt="" />
+                            <Image  
+                            // crossorigin="anonymous"
+                             src={`${configData.PIC_URL}/${state.profile?.profImage}`} className="useDataImg2" alt="" />
                             <div className="userDataName">
                             <span>{state.profile?.fullName}</span>
                             <span>{state.profile?.email}</span>

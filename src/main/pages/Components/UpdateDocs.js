@@ -37,7 +37,7 @@ const UpdateDoc = (props) => {
     const getDocs = async () => {
         try {
 
-            return fetch(`${configData.TEST_URL}/document/singleDocument/${id}`, {
+            return fetch(`${configData.SERVER_URL}/document/singleDocument/${id}`, {
                 method: "get",
                 headers: {
                     Accept: "application/json",
@@ -65,7 +65,7 @@ const UpdateDoc = (props) => {
 
     const getEstates = async () => {
 
-        return fetch(`${configData.TEST_URL}/estate/getEstate`, {
+        return fetch(`${configData.SERVER_URL}/estate/getEstate`, {
             method: "get",
             headers: {
                 Accept: "application/json",
@@ -95,7 +95,7 @@ const UpdateDoc = (props) => {
     const getClients = async () => {
         try {
 
-            return fetch(`${configData.TEST_URL}/client/getAllClients`, {
+            return fetch(`${configData.SERVER_URL}/client/getAllClients`, {
                 method: "get",
                 headers: {
                     Accept: "application/json",
@@ -120,7 +120,7 @@ const UpdateDoc = (props) => {
     const getMarketer = async () => {
         try {
 
-            return fetch(`${configData.TEST_URL}/marketer/getMarketer`, {
+            return fetch(`${configData.SERVER_URL}/marketer/getMarketer`, {
                 method: "get",
                 headers: {
                     Accept: "application/json",
@@ -216,7 +216,7 @@ const UpdateDoc = (props) => {
     const updateDocs = async (data) => {
         // return console.log(data)
 
-        return fetch(`${configData.TEST_URL}/document/update/${id}`, {
+        return fetch(`${configData.SERVER_URL}/document/update/${id}`, {
             method: "put",
             headers: {
                 Accept: "application/json",
@@ -282,7 +282,7 @@ const UpdateDoc = (props) => {
         const estId = e.target.value;
         try {
 
-            return fetch(`${configData.TEST_URL}/estate/getEstatePlan/${estId}`, {
+            return fetch(`${configData.SERVER_URL}/estate/getEstatePlan/${estId}`, {
                 method: "get",
                 headers: {
                     Accept: "application/json",
@@ -343,7 +343,9 @@ const UpdateDoc = (props) => {
                                         {searchResults.map((result) => (
 
                                             <div onClick={() => selectClient(result)} className="searchDiv d-flex align-items-center my-4 mx-4">
-                                                <Image crossorigin="anonymous" src={`${configData.TEXT_IMG}/${result.passport}`} className="serchImg" alt="" />
+                                                <Image 
+                                                // crossorigin="anonymous"
+                                                 src={`${configData.PIC_URL}/${result.passport}`} className="serchImg" alt="" />
                                                 <span className="serchName">{result?.fullName}</span>
                                             </div>
                                         ))}
@@ -355,7 +357,9 @@ const UpdateDoc = (props) => {
 
                                         {selectedClient && <>
                                             <div className="border-0 searchDiv d-flex align-items-center justify-content-center my-4">
-                                                <Image crossorigin="anonymous" src={`${configData.TEXT_IMG}/${selectedClient.passport}`} className="serchImg" alt="" />
+                                                <Image 
+                                                // crossorigin="anonymous"
+                                                 src={`${configData.PIC_URL}/${selectedClient.passport}`} className="serchImg" alt="" />
                                                 <div className="serchText">
                                                     <span className="serchName">{selectedClient?.fullName}</span>
                                                     <span className="serchEmail">{selectedClient?.email}</span>
@@ -662,7 +666,9 @@ const UpdateDoc = (props) => {
                                         {searchMResults.map((result) => (
 
                                             <div onClick={() => selectMReferer(result)} className="searchDiv d-flex align-items-center my-4 mx-4">
-                                                <Image crossorigin="anonymous" src={`${configData.TEXT_IMG}/${result.profImage}`} className="serchImg" alt="" />
+                                                <Image 
+                                                // crossorigin="anonymous"
+                                                 src={`${configData.PIC_URL}/${result.profImage}`} className="serchImg" alt="" />
                                                 <span className="serchName">{result?.fullName}</span>
                                             </div>
                                         ))}
@@ -674,7 +680,9 @@ const UpdateDoc = (props) => {
                                         {selectedMarketer && <>
                                             <h4 className="mt-2 mb-4 text-center">MARKETER DETAILS </h4>
                                             <div className="border-0 searchDiv d-flex align-items-center my-4  justify-content-center">
-                                                <Image crossorigin="anonymous" src={`${configData.TEXT_IMG}/${selectedMarketer.profImage}`} className="serchImg" alt="" />
+                                                <Image 
+                                                // crossorigin="anonymous"
+                                                 src={`${configData.PIC_URL}/${selectedMarketer.profImage}`} className="serchImg" alt="" />
                                                 <div className="serchText">
                                                     <span className="serchName">{selectedMarketer?.fullName}</span>
                                                     <span className="serchEmail">{selectedMarketer?.email}</span>

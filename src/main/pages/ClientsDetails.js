@@ -50,7 +50,6 @@ function ClientsDetails() {
             if (param.data?._id == data?._id) {
                 getClient();
             }
-            // alert(param.message)
         });
 
         return () => {
@@ -131,7 +130,7 @@ function ClientsDetails() {
 
 
         try {
-            const response = await fetch(`${configData.TEST_URL}/client/update/${id}`, {
+            const response = await fetch(`${configData.SERVER_URL}/client/update/${id}`, {
                 method: "put",
                 headers: {
                     Accept: "application/json",
@@ -166,7 +165,7 @@ function ClientsDetails() {
             setPage('all');
             setisPageLoading(true);
 
-            return fetch(`${configData.TEST_URL}/document/client/${id}`, {
+            return fetch(`${configData.SERVER_URL}/document/client/${id}`, {
                 method: "get",
                 headers: {
                     Accept: "application/json",
@@ -279,7 +278,9 @@ function ClientsDetails() {
 
                                 <div className="userSecOne">
                                     <div className="userDataOne">
-                                        <Image crossorigin="anonymous" src={`${configData.TEXT_IMG}/${data.passport}`} className="useDataImg" alt="" />
+                                        <Image 
+                                        // crossorigin="anonymous"
+                                         src={`${configData.PIC_URL}/${data.passport}`} className="useDataImg" alt="" />
                                         <div className="userDataName">
                                             <span>{data?.fullName}</span>
                                             <span>{data?.email}</span>

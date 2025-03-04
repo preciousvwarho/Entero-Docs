@@ -18,7 +18,7 @@ const RoseGarden = (props) => {
 
         try {
 
-            return fetch(`${configData.TEST_URL}/plot/estate/plots/${estate._id}`, {
+            return fetch(`${configData.SERVER_URL}/plot/estate/plots/${estate._id}`, {
                 method: "get",
                 headers: {
                   Accept: "application/json",
@@ -173,7 +173,9 @@ const RoseGarden = (props) => {
 
                                 <div className="user-details">
 
-                                    <Image crossorigin="anonymous" src={`${configData.TEXT_IMG}/${data.docId.clientId.passport}`} className="useDataImg3" alt="" />
+                                    <Image 
+                                    // crossorigin="anonymous"
+                                     src={`${configData.PIC_URL}/${data.docId.clientId.passport}`} className="useDataImg3" alt="" />
                                     <div className="userDataName">
                                         <span>{data.docId.clientId.fullName}</span>
                                         <span>{data.docId.clientId.phoneNumber}</span>

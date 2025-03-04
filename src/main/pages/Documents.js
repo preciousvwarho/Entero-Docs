@@ -16,7 +16,6 @@ import { ThreeDots } from 'react-loader-spinner'
 import { toast } from "react-toastify";
 import Plots from './Components/Plots';
 
-
 import io from 'socket.io-client';
 const socket = io(`${configData.URL}`);
 
@@ -47,6 +46,7 @@ function Documents() {
 
     const [miniNav, setMiniNav] = useState('all');
     const [activeEstate, setActiveEstate] = useState([]);
+    const [searchLoading, setSearchLoading] = useState(false);
 
     const handleClose = () => setShow(false);
     const handleShow = () => setShow(true);
@@ -60,21 +60,21 @@ function Documents() {
         setShowOffcanvas(true);
     }
     useEffect(() => {
-      socket.on('document-activity', (param) => {
-        getDocs(docPage);
-      });
-  
-      return () => {
-        socket.off('document-activity');
-      };
+        socket.on('document-activity', (param) => {
+            getDocs(docPage);
+        });
+
+        return () => {
+            socket.off('document-activity');
+        };
     }, []);
-  
+
 
     const getEstates = async () => {
         try {
             setIsEstLoading(true);
 
-            return fetch(`${configData.TEST_URL}/estate/getEstate`, {
+            return fetch(`${configData.SERVER_URL}/estate/show/Estate`, {
                 method: "get",
                 headers: {
                     Accept: "application/json",
@@ -221,7 +221,7 @@ function Documents() {
     const getClients = async () => {
         try {
 
-            return fetch(`${configData.TEST_URL}/client/getAllClients`, {
+            return fetch(`${configData.SERVER_URL}/client/getAllClients`, {
                 method: "get",
                 headers: {
                     Accept: "application/json",
@@ -246,7 +246,7 @@ function Documents() {
     const getMarketer = async () => {
         try {
 
-            return fetch(`${configData.TEST_URL}/marketer/getMarketer`, {
+            return fetch(`${configData.SERVER_URL}/marketer/getMarketer`, {
                 method: "get",
                 headers: {
                     Accept: "application/json",
@@ -278,12 +278,32 @@ function Documents() {
     const [searchQuery, setSearchQuery] = useState('');
     const [searchResults, setSearchResults] = useState([]);
 
-    const handleSearch = (query) => {
-        const filteredResults = client.filter((client) =>
-            client.fullName.toLowerCase().includes(query.toLowerCase())
-        );
-        console.log(filteredResults)
-        setSearchResults(filteredResults);
+    const handleSearch = async (query) => {
+        // const filteredResults = client.filter((client) =>
+        //     client.fullName.toLowerCase().includes(query.toLowerCase())
+        // );
+        // console.log(filteredResults)
+        // setSearchResults(filteredResults);
+
+        try {
+            setSearchLoading(true);
+
+            const response = await fetch(`${configData.SERVER_URL}/client/searchDocClient?search=${query}`, {
+                method: "post",
+                headers: {
+                    Accept: "application/json",
+                    "x-auth-token": window.localStorage.getItem("token")
+                }
+            })
+
+            const responseJson = await response.json();
+            setSearchResults(responseJson.data);
+            setSearchLoading(false);
+
+        } catch (error) {
+            console.log(error);
+            setSearchLoading(false);
+        }
     };
 
     const handleChange = (e) => {
@@ -309,22 +329,42 @@ function Documents() {
     const [searchMQuery, setSearchMQuery] = useState('');
     const [searchMResults, setSearchMResults] = useState([]);
 
-    const handleMSearch = (query) => {
-        const filteredResults = marketers.filter((marketer) =>
-            marketer.fullName.toLowerCase().includes(query.toLowerCase())
-        );
-        setSearchMResults(filteredResults);
+    const handleMSearch = async (query) => {
+        // const filteredResults = marketers.filter((marketer) =>
+        //     marketer.fullName.toLowerCase().includes(query.toLowerCase())
+        // );
+        // setSearchMResults(filteredResults);
+
+        try {
+            setSearchLoading(true);
+
+            const response = await fetch(`${configData.SERVER_URL}/marketer/searchRefMarketer?search=${query}`, {
+                method: "post",
+                headers: {
+                    Accept: "application/json",
+                    "x-auth-token": window.localStorage.getItem("token")
+                }
+            })
+
+            const responseJson = await response.json();
+            console.log(responseJson.data);
+            setSearchMResults(responseJson.data);
+            setSearchLoading(false);
+
+        } catch (error) {
+            console.log(error);
+            setSearchLoading(false);
+        }
     };
 
     const handleMChange = (e) => {
         const query = e.target.value;
         setSearchMQuery(query);
 
-        // Perform search when at least 2 characters are entered
         if (query.length >= 2) {
             handleMSearch(query);
         } else {
-            setSearchMResults([]); // Clear results if the search query is less than 2 characters
+            setSearchMResults([]); 
         }
     };
 
@@ -332,10 +372,6 @@ function Documents() {
 
 
     const handleDocSearch = async (query) => {
-        // const filteredResults = docs.filter((docs) =>
-        //    docs?.clientId?.fullName.toLowerCase().includes(query.toLowerCase())
-        // );
-
         try {
             setisPageLoading(true);
 
@@ -372,7 +408,6 @@ function Documents() {
         if (query.length >= 2) {
             handleDocSearch(query);
         } else {
-            ;
             setFilteredDocs(docs); // Clear results if the search query is less than 2 characters
         }
     };
@@ -462,7 +497,7 @@ function Documents() {
         const estId = e.target.value;
         try {
 
-            return fetch(`${configData.TEST_URL}/estate/getEstatePlan/${estId}`, {
+            return fetch(`${configData.SERVER_URL}/estate/getEstatePlan/${estId}`, {
                 method: "get",
                 headers: {
                     Accept: "application/json",
@@ -584,24 +619,24 @@ function Documents() {
 
                                 </>}
 
-                         {page !== "all" && 
-                              <div class="category-menu">
-                                    <span className="line"></span>
-                                    <ul className="nav lastNav">
-                                        {page !== "all" && <>
-                                            <li onClick={() => mapDisplay(page)} className="nav-item">
-                                                <a className="nav-link" href="#">
-                                                    <FaMapMarkedAlt />
-                                                </a>
-                                            </li>
-                                            <li onClick={() => plotDisplay(page)} className="nav-item">
-                                                <a className="nav-link" href="#">
-                                                    <MdLandslide />
-                                                </a>
-                                            </li>
-                                        </>}
-                                    </ul>
-                                 </div> 
+                                {page !== "all" &&
+                                    <div class="category-menu">
+                                        <span className="line"></span>
+                                        <ul className="nav lastNav">
+                                            {page !== "all" && <>
+                                                <li onClick={() => mapDisplay(page)} className="nav-item">
+                                                    <a className="nav-link" href="#">
+                                                        <FaMapMarkedAlt />
+                                                    </a>
+                                                </li>
+                                                <li onClick={() => plotDisplay(page)} className="nav-item">
+                                                    <a className="nav-link" href="#">
+                                                        <MdLandslide />
+                                                    </a>
+                                                </li>
+                                            </>}
+                                        </ul>
+                                    </div>
                                 }
 
                             </Col>
@@ -663,7 +698,9 @@ function Documents() {
                                                                         return <>
                                                                             <tr key={index + 1} onClick={() => navigate(data)} className="tr">
                                                                                 <td>
-                                                                                    <img crossorigin="anonymous" src={`${configData.TEXT_IMG}/${data?.clientId?.passport}`} className="img-fluid tableImg" alt="user" />
+                                                                                    <img
+                                                                                        crossorigin="anonymous"
+                                                                                        src={`${configData.PIC_URL}/${data?.clientId?.passport}`} className="img-fluid tableImg" alt="user" />
                                                                                 </td>
                                                                                 <td>{data?.clientId?.fullName}</td>
                                                                                 <td>{data?.estateId?.name}</td>
@@ -688,7 +725,7 @@ function Documents() {
 
 
                                                             {totalPages > 1 &&
-                                                            
+
                                                                 <nav aria-label="...">
                                                                     <ul className="pagination">
                                                                         <li className={`page-item ${docPage === 1 ? 'disabled' : ''}`}>
@@ -820,7 +857,9 @@ function Documents() {
 
                                     {selectedClient && <>
                                         <div className="border-0 searchDiv d-flex align-items-center justify-content-center my-4">
-                                            <Image crossorigin="anonymous" src={`${configData.TEXT_IMG}/${selectedClient.passport}`} className="serchImg" alt="" />
+                                            <Image
+                                                // crossorigin="anonymous"
+                                                src={`${configData.PIC_URL}/${selectedClient.passport}`} className="serchImg" alt="" />
                                             <div className="serchText">
                                                 <span className="serchName">{selectedClient?.fullName}</span>
                                                 <span className="serchEmail">{selectedClient?.email}</span>
@@ -837,14 +876,14 @@ function Documents() {
                                         <input type="text" class="form-control" placeholder="Search for client" value={searchQuery} onChange={handleChange} />
                                     </div>
 
-
-
                                     <div class="list-referer">
 
                                         {searchResults.map((result) => (
 
                                             <div onClick={() => selectReferer(result)} className="searchDiv d-flex align-items-center my-4 mx-4">
-                                                <Image crossorigin="anonymous" src={`${configData.TEXT_IMG}/${result.passport}`} className="serchImg" alt="" />
+                                                <Image
+                                                    // crossorigin="anonymous"
+                                                    src={`${configData.PIC_URL}/${result.passport}`} className="serchImg" alt="" />
                                                 <span className="serchName">{result?.fullName}</span>
                                             </div>
                                         ))}
@@ -1135,7 +1174,9 @@ function Documents() {
                                     {selectedMarketer && <>
                                         <h4 className="mt-2 mb-4 text-center">MARKETER DETAILS </h4>
                                         <div className="border-0 searchDiv d-flex align-items-center my-4  justify-content-center">
-                                            <Image crossorigin="anonymous" src={`${configData.TEXT_IMG}/${selectedMarketer.profImage}`} className="serchImg" alt="" />
+                                            <Image
+                                                // crossorigin="anonymous"
+                                                src={`${configData.PIC_URL}/${selectedMarketer.profImage}`} className="serchImg" alt="" />
                                             <div className="serchText">
                                                 <span className="serchName">{selectedMarketer?.fullName}</span>
                                                 <span className="serchEmail">{selectedMarketer?.email}</span>
@@ -1161,7 +1202,9 @@ function Documents() {
                                         {searchMResults.map((result) => (
 
                                             <div onClick={() => selectMReferer(result)} className="searchDiv d-flex align-items-center my-4 mx-4">
-                                                <Image crossorigin="anonymous" src={`${configData.TEXT_IMG}/${result.profImage}`} className="serchImg" alt="" />
+                                                <Image
+                                                    // crossorigin="anonymous"
+                                                    src={`${configData.PIC_URL}/${result.profImage}`} className="serchImg" alt="" />
                                                 <span className="serchName">{result?.fullName}</span>
                                             </div>
                                         ))}

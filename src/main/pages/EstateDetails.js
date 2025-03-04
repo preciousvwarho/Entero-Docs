@@ -27,6 +27,9 @@ function EstateDetails() {
   const [showOffcanvas, setShowOffcanvas] = useState(false);
   const [isBtnLoading, setisBtnLoading] = useState(false);
   const [isSoldOut, setIsSoldOut] = useState(data?.isSoldOut);
+  const [showProperty, setShowProperty] = useState(data?.show);
+  const [isLayoutAvailable, setIsLayoutAvailable] = useState(data?.isLayoutAvailable);
+
 
 
   const [image, setImage] = useState('');
@@ -108,7 +111,7 @@ function EstateDetails() {
   const updateEstate = async (data) => {
 
     setisBtnLoading(true)
-    return axios.put(`${configData.TEST_URL}/estate/update/${id}`, {
+    return axios.put(`${configData.SERVER_URL}/estate/update/${id}`, {
       name: data?.name,
       price: data?.price,
       priceTwo: data?.priceTwo,
@@ -118,7 +121,9 @@ function EstateDetails() {
       features: data?.features,
       pageContent: data?.pageContent,
       mapIdentifier: data?.mapIdentifier,
-      isSoldOut: isSoldOut
+      isSoldOut: isSoldOut,
+      show:showProperty,
+      isLayoutAvailable:isLayoutAvailable,
     })
       .then((response) => {
         console.log(response.data.data);
@@ -315,17 +320,19 @@ function EstateDetails() {
 
                   {screen ? <>
 
+
                     <Plots id={id} />
 
                   </>
                     : <>
 
-
                       <section class="mt-4">
                         <div class="container detailsSec">
                           <div class="row">
                             <div class="col-md-5 wow fadeInUp">
-                              <img crossorigin="anonymous" src={`${configData.TEXT_IMG}/${data?.image}`} class="d-block w-100" alt="..." />
+                              <img
+                                // crossorigin="anonymous" 
+                                src={`${configData.PIC_URL}/${data?.image}`} class="d-block w-100" alt="..." />
                               <Button variant="secondary" onClick={handShow}>
                                 update Image
                               </Button>
@@ -443,71 +450,71 @@ function EstateDetails() {
                       </div>
 
                       <div className="mb-5">
-                  
-                      {page === "paymentPlan" && <>
 
-                        <Col lg="12">
-                          <Row className="mt-5">
-                            <Col lg="9">
-                              <h5 className="">Payment Plan</h5>
-                            </Col>
-                            <Col lg="3">
-                              <p className="btn-add" onClick={handleShow}
-                              >Add Plan</p>
-                            </Col>
-                          </Row>
-                        </Col>
+                        {page === "paymentPlan" && <>
 
-
-                        <Col lg="8" className="mt-4 mb-4">
-
-                          {plan && plan.length > 0
-                            ? plan.map(p => {
-                              return <>
-
-                                <div class="priceBox plan mt-3">
-                                  <NumericFormat value={p.amount} displayType={'text'} thousandSeparator={true} prefix={`${p.title}: ₦ `} renderText={text => <p class="price">{text}</p>} />
-                                  <span variant="primary" className="fa fa-edit mr-3" onClick={() => editPlan(p)}></span>
-                                  <span variant="primary" style={{ color: 'red' }} className="fa fa-trash mr-3" onClick={() => deletePlan(p._id)}></span>
-                                </div>
-
-                              </>
-                            }) : <>
-                              <section className="container mt-5">
-                                <div className="row justify-content-center align-items-center">
-                                  <p style={{ color: '#000', fontWeight: "bold", marginTop: '20px', fontSize: '20px', alignSelf: "center" }}>No Payment Plan Found</p>
-                                </div>
-                              </section>
-
-                            </>}
-
-                        </Col>
-
-                      </>}
+                          <Col lg="12">
+                            <Row className="mt-5">
+                              <Col lg="9">
+                                <h5 className="">Payment Plan</h5>
+                              </Col>
+                              <Col lg="3">
+                                <p className="btn-add" onClick={handleShow}
+                                >Add Plan</p>
+                              </Col>
+                            </Row>
+                          </Col>
 
 
-                      {page === "images" && <>
-                        <Col lg="12" className="mt-4 mb-4">
+                          <Col lg="8" className="mt-4 mb-4">
 
-                          <AddImages id={id} />
+                            {plan && plan.length > 0
+                              ? plan.map(p => {
+                                return <>
 
-                        </Col>
+                                  <div class="priceBox plan mt-3">
+                                    <NumericFormat value={p.amount} displayType={'text'} thousandSeparator={true} prefix={`${p.title}: ₦ `} renderText={text => <p class="price">{text}</p>} />
+                                    <span variant="primary" className="fa fa-edit mr-3" onClick={() => editPlan(p)}></span>
+                                    <span variant="primary" style={{ color: 'red' }} className="fa fa-trash mr-3" onClick={() => deletePlan(p._id)}></span>
+                                  </div>
 
-                      </>}
+                                </>
+                              }) : <>
+                                <section className="container mt-5">
+                                  <div className="row justify-content-center align-items-center">
+                                    <p style={{ color: '#000', fontWeight: "bold", marginTop: '20px', fontSize: '20px', alignSelf: "center" }}>No Payment Plan Found</p>
+                                  </div>
+                                </section>
+
+                              </>}
+
+                          </Col>
+
+                        </>}
 
 
-                      {page === "faq" && <>
+                        {page === "images" && <>
+                          <Col lg="12" className="mt-4 mb-4">
 
-                        <Col lg="12" className="mt-4 mb-4">
-                          <AddFaq id={id} />
-                        </Col>
+                            <AddImages id={id} />
 
-                      </>}
+                          </Col>
+
+                        </>}
 
 
-                      {page === "offers" && <>
-                        <Offers />
-                      </>}
+                        {page === "faq" && <>
+
+                          <Col lg="12" className="mt-4 mb-4">
+                            <AddFaq id={id} />
+                          </Col>
+
+                        </>}
+
+
+                        {page === "offers" && <>
+                          <Offers />
+                        </>}
                       </div>
 
                     </>}
@@ -620,6 +627,13 @@ function EstateDetails() {
                       <label for="floatingTextarea2">Estate Content</label>
                     </div>
 
+                    <div className="mb-3 mt-3 form-check">
+                      <input type="checkbox" className="form-check-input" name="showProperty" id="exampleCheck1"
+                        onChange={(e) => setShowProperty(e.target.checked)}
+                        checked={showProperty} />
+                      <label className="form-check-label" for="exampleCheck1">Show Property</label>
+                    </div>
+
                     <div className="form-floating mt-3">
                       <input placeholder="Estate Name" type="text" className="h-auto form-control" id="floatingInput" name="mapIdentifier" ref={register({ required: true })} defaultValue={data ? data?.mapIdentifier : ''} />
                       <label for="floatingInput">Map Identifier</label>
@@ -632,6 +646,15 @@ function EstateDetails() {
                         checked={isSoldOut} />
                       <label className="form-check-label" for="exampleCheck1">Please check if property is sold out</label>
                     </div>
+
+
+                    <div className="mb-3 mt-3 form-check">
+                      <input type="checkbox" className="form-check-input" name="showProperty" id="exampleCheck1"
+                        onChange={(e) => setIsLayoutAvailable(e.target.checked)}
+                        checked={isLayoutAvailable} />
+                      <label className="form-check-label" for="exampleCheck1">is Layout Available</label>
+                    </div>
+
 
 
                     <Button variant="primary" type="submit" disabled={isBtnLoading} style={{ float: 'right' }}>
@@ -702,7 +725,6 @@ function EstateDetails() {
 
 
           </Row>
-
 
         </Modal.Body>
         <Modal.Footer>

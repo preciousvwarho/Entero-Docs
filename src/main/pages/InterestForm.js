@@ -17,6 +17,26 @@ function InterestForm() {
     const [page, setPage] = useState("all");
     const [miniNav, setMiniNav] = useState('all');
     const [show, setShow] = useState(false);
+    const [docPage, setDocPage] = useState(1);
+    const [sizePerPage, setSizePerPage] = useState(20);
+    const [totalPages, setTotalPages] = useState(null);
+    const [pageNumberRange, setPageNumberRange] = useState([]);
+    
+      useEffect(() => {
+        updatePageNumberRange();
+      }, [docPage, totalPages]);
+    
+      const updatePageNumberRange = () => {
+        const rangeStart = Math.max(1, docPage - 2);
+        const rangeEnd = Math.min(totalPages, rangeStart + 4);
+        setPageNumberRange([...Array(rangeEnd - rangeStart + 1).keys()].map(num => num + rangeStart));
+      };
+    
+      const onPageChange = (pageNumb) => {
+        setDocPage(pageNumb);
+        getInterestForm(pageNumb);
+      };
+    
 
     const handleClose = () => setShow(false);
     const handleShow = (i) => {
@@ -27,16 +47,17 @@ function InterestForm() {
 
 
 
-    const getInterestForm = async () => {
+    const getInterestForm = async (pageD) => {
         setisBtnLoading(true);
 
-        return axios.get(`${configData.SERVER_URL}/document/get/interest/form`, {
+        return axios.get(`${configData.SERVER_URL}/document/get/interest/form?page=${pageD}&sizePerPage=${sizePerPage}`, {
             headers: {
                 "x-auth-token": window.localStorage.getItem("token")
             }
         }).then((response) => {
             console.log("interest form", response.data.data);
             setInt(response.data.data);
+            setTotalPages(response.data.totalPages)
             setisBtnLoading(false)
         });
 
@@ -156,8 +177,6 @@ function InterestForm() {
                                             </>)
 
                                                 : (<>
-
-
                                                     <div className="table-responsive">
                                                         <table className="table table-striped">
                                                             <thead>
@@ -199,8 +218,31 @@ function InterestForm() {
                                                             </tbody>
                                                         </table>
                                                     </div>
-
                                                 </>)}
+
+
+                                            <div className="w-100 mt-4 d-flex justify-content-end align-items-center">
+
+
+                                                {totalPages > 1 &&
+
+                                                    <nav aria-label="...">
+                                                        <ul className="pagination">
+                                                            <li className={`page-item ${docPage === 1 ? 'disabled' : ''}`}>
+                                                                <a className="page-link" href="#" onClick={() => onPageChange(docPage - 1)}>Previous</a>
+                                                            </li>
+                                                            {pageNumberRange.map(pageNum => (
+                                                                <li key={pageNum} className={`page-item ${pageNum === docPage ? 'active' : ''}`}>
+                                                                    <a className="page-link" href="#" onClick={() => onPageChange(pageNum)}>{pageNum}</a>
+                                                                </li>
+                                                            ))}
+                                                            <li className={`page-item ${docPage === totalPages ? 'disabled' : ''}`}>
+                                                                <a className="page-link" href="#" onClick={() => onPageChange(docPage + 1)}>Next</a>
+                                                            </li>
+                                                        </ul>
+                                                    </nav>
+                                                }
+                                            </div>
 
                                         </Row>
                                     </Col>
@@ -308,6 +350,22 @@ function InterestForm() {
                                     </div>
                                 </div>
                             </div>
+
+                        {data?.marketerId &&
+                            <div className="profInfo">
+                                <h4 className="h4">Marketer's Info</h4>
+                                <div className="profInfoData">
+                                    <div className="profData">
+                                        <span>Full Name</span>
+                                        <span>{data?.marketerId?.fullName}</span>
+                                    </div>
+                                    <div className="profData">
+                                        <span>Phone Number</span>
+                                        <span>{data?.marketerId?.phoneNumber}</span>
+                                    </div>
+                                </div>
+                            </div>
+                            }
 
 
                         </div>

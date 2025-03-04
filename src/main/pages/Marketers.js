@@ -65,13 +65,11 @@ function Marketers() {
     setPageNumberRange([...Array(rangeEnd - rangeStart + 1).keys()].map(num => num + rangeStart));
   };
 
-
-
   const onPageChange = (pageNumb) => {
     setDocPage(pageNumb);
     if (type !== null) {
-        statusMarketer(pageNumb, type);
-        return
+      statusMarketer(pageNumb, type);
+      return
     }
     getMarketer(pageNumb);
   };
@@ -107,11 +105,8 @@ function Marketers() {
 
     // return console.log(data.sex);
 
-
-
-
     try {
-      const response = await fetch(`${configData.TEST_URL}/marketer/addMarketer`, {
+      const response = await fetch(`${configData.SERVER_URL}/marketer/addMarketer`, {
         method: "post",
         headers: {
           "x-auth-token": window.localStorage.getItem("token")
@@ -144,17 +139,18 @@ function Marketers() {
 
       setPage('all')
       setIsPageLoading(true);
-      // ${configData.TEST_URL}/marketer/getMarketer?page=${pageD}&sizePerPage=${sizePerPage}
-      return fetch(`${configData.TEST_URL}/marketer/getMarketer?page=${pageD}&sizePerPage=${sizePerPage}`, {
+      // ${configData.SERVER_URL}/marketer/getMarketer?page=${pageD}&sizePerPage=${sizePerPage}
+      return fetch(`${configData.SERVER_URL}/marketer/getMarketer?page=${pageD}&sizePerPage=${sizePerPage}`, {
         method: "get",
         headers: {
           Accept: "application/json",
           "Content-Type": "application/json",
-          "x-auth-token":  window.localStorage.getItem("token")
+          "x-auth-token": window.localStorage.getItem("token")
         },
       })
         .then((response) => response.json())
         .then((responseJson) => {
+          console.log("marketers", responseJson.data)
           setTotalPages(responseJson.totalPages)
           setMarketers(responseJson.data);
           setMarketersN(responseJson.data);
@@ -176,12 +172,12 @@ function Marketers() {
 
       setIsPageLoading(true);
 
-      return fetch(`${configData.TEST_URL}/marketer/getMarketersPaginatedStatus?page=${pageD}&sizePerPage=${sizePerPage}&pageType=${type}`, {
+      return fetch(`${configData.SERVER_URL}/marketer/getMarketersPaginatedStatus?page=${pageD}&sizePerPage=${sizePerPage}&pageType=${type}`, {
         method: "get",
         headers: {
           Accept: "application/json",
           "Content-Type": "application/json",
-           "x-auth-token":  window.localStorage.getItem("token")
+          "x-auth-token": window.localStorage.getItem("token")
         },
       })
         .then((response) => response.json())
@@ -230,20 +226,39 @@ function Marketers() {
   const [search, setSearch] = useState('');
 
 
-  const handleAdminSearch = (query) => {
-    const filteredResults = marketersN.filter((marketersN) =>
-      marketersN?.fullName.toLowerCase().includes(query.toLowerCase())
-    );
-    setMarketers(filteredResults);
+  const handleMSearch = async (query) => {
+    try {
+      setIsPageLoading(true);
+
+      const response = await fetch(`${configData.SERVER_URL}/marketer/searchMarketer?page=${page}&sizePerPage=${sizePerPage}&search=${query}`, {
+        method: "post",
+        headers: {
+          Accept: "application/json",
+          "x-auth-token": window.localStorage.getItem("token")
+        }
+      })
+
+      const responseJson = await response.json();
+      //totalCount
+      setTotalPages(responseJson.totalPages)
+      setMarketers(responseJson.data);
+      // setMarketersN(responseJson.data);
+      setIsPageLoading(false);
+
+    } catch (error) {
+      console.log(error);
+      setIsPageLoading(false);
+    }
   };
 
-  const handleDocChange = (e) => {
+
+  const handleMChange = (e) => {
     const query = e.target.value;
     setSearch(query);
 
     // Perform search when at least 2 characters are entered
     if (query.length >= 2) {
-      handleAdminSearch(query);
+      handleMSearch(query);
     } else {
       setMarketers(marketersN); // Clear results if the search query is less than 2 characters
     }
@@ -272,7 +287,7 @@ function Marketers() {
               <div class="form-group has-search" style={{ width: "30%" }}>
                 <div className="col-md-12 mx-auto">
                   <div className="input-group">
-                    <input className="form-control border rounded-pill" placeholder="Search with marketers name" value={search} onChange={handleDocChange} type="search" id="example-search-input" />
+                    <input className="form-control border rounded-pill" placeholder="Search with marketers name" value={search} onChange={handleMChange} type="search" id="example-search-input" />
                   </div>
                 </div>
               </div>
@@ -353,7 +368,9 @@ function Marketers() {
                               return <>
                                 <tr key={index + 1} onClick={() => mDetails(data)} className="tr">
                                   <td>
-                                    <img crossorigin="anonymous" src={`${configData.TEXT_IMG}/${data?.profImage}`} className="img-fluid tableImg" alt="user" />
+                                    <img
+                                    // crossorigin="anonymous"
+                                      src={`${configData.PIC_URL}/${data?.profImage}`} className="img-fluid tableImg" alt="user" />
                                   </td>
                                   <td>{data?.fullName}</td>
                                   <td>{data?.email}</td>

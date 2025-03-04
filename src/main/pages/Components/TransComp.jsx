@@ -42,7 +42,9 @@ const TransComp = (props) => {
                     return <>
                     <tr className="tr" key={index + 1} onClick={()=> navigate(t)}>
                     <td>
-                    <Image  crossorigin="anonymous" src={`${configData.PIC_URL}/${t?.clientId?.passport}`} className="img-fluid tableImg" alt="user"/>
+                    <Image  
+                    crossorigin="anonymous"
+                     src={`${configData.PIC_URL}/${t?.clientId?.passport}`} className="img-fluid tableImg" alt="user"/>
                     </td>
                     <td>{t?.clientId?.fullName}</td>
                     <td>{t?.estateId?.name}</td>

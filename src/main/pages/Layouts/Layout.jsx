@@ -16,7 +16,7 @@ const EstLayout = (props) => {
     const offCanvasShow = () => setShowOffcanvas(true);
 
     const [svgPaths, setSvgPaths] = useState([]);
-    
+
     const [svgData, setSvgData] = useState({
         svgPaths: [],
         svgImg: '',
@@ -25,11 +25,12 @@ const EstLayout = (props) => {
     });
 
     useEffect(() => {
+        console.log(estate._id)
         // Fetch SVG paths from the backend
-        fetch(`${configData.TEST_URL}/estate/get-layout/${estate._id}`)
+        fetch(`${configData.SERVER_URL}/estate/get-layout/${estate._id}`)
             .then(response => response.json())
             .then(data => {
-                console.log("data", data);
+                console.log("Svg data", JSON.stringify(data.data?.svgPaths, null, 2));
                 setSvgData({
                     svgPaths: data.data.svgPaths,
                     svgImg: data.data.svgImg,
@@ -45,7 +46,7 @@ const EstLayout = (props) => {
 
         try {
 
-            return fetch(`${configData.TEST_URL}/plot/estate/plots/${estate._id}`, {
+            return fetch(`${configData.SERVER_URL}/plot/estate/plots/${estate._id}`, {
                 method: "get",
                 headers: {
                     Accept: "application/json",
@@ -55,7 +56,6 @@ const EstLayout = (props) => {
             })
                 .then((response) => response.json())
                 .then((responseJson) => {
-                    console.log(responseJson.data);
                     setProperties(responseJson.data);
                 })
                 .catch((error) => {
@@ -88,7 +88,7 @@ const EstLayout = (props) => {
     const getPlotData = (id) => {
 
         const selectedPlot = properties.find((property) => `${property.plotIdentifier}` === id)
-        if(selectedPlot.status === 'available') {
+        if (selectedPlot.status === 'available') {
             return
         }
         if (selectedPlot) {
@@ -104,20 +104,29 @@ const EstLayout = (props) => {
             state: { data: data },
         });
     }
-    
-    const estImage = estate.mapIdentifier  === "fountain" ? fountainEstate : estate.mapIdentifier  === "atlantic" ? atlantic : null
+
+    useEffect(() => {
+        if (svgData?.svgImg) {
+            const imageUrl = `${configData.PIC_URL}/${svgData.svgImg}`;
+            console.log("Image URL:", imageUrl);
+
+            document.documentElement.style.setProperty('--background-img', `url('${imageUrl}')`);
+            document.documentElement.style.setProperty('--layout-width', `${svgData.width || '100%'}px`);
+            document.documentElement.style.setProperty('--layout-height', `${svgData.height || '100%'}px`);
+        }
+    }, [svgData]);
 
     return (
         <>
 
-            {/* <div className="wrapper">
-         <div className="scrollable-content"> */}
-            <div style={{background: `url(${estImage})`,backgroundSize: "cover", width: "100%"}} className="layout">
+            {/* {`${configData.PIC_URL}/${e.image}`} */}
+            {/* <p>{`${configData.PIC_URL}/${svgData?.svgImg}`}</p> */}
+            <div className="layout">
 
-                <svg width={svgData.width} 
-                     height={svgData.height} 
-                     viewBox={`0 0 ${svgData.width} ${svgData.height}`} 
-                     fill="none" xmlns="http://www.w3.org/2000/svg">
+                <svg width={svgData.width}
+                    height={svgData.height}
+                    viewBox={`0 0 ${svgData.width} ${svgData.height}`}
+                    fill="none" xmlns="http://www.w3.org/2000/svg">
 
                     <g id="Group 2">
                         {svgPaths && svgPaths.map((path) => (<>
@@ -129,7 +138,7 @@ const EstLayout = (props) => {
                                 stroke="black"
                                 onClick={() => getPlotData(path.id)}
                             />
-                       </> ))}
+                        </>))}
                     </g>
 
                 </svg>
@@ -190,7 +199,9 @@ const EstLayout = (props) => {
 
                                 <div className="user-details">
 
-                                    <Image crossorigin="anonymous" src={`${configData.TEXT_IMG}/${data.docId.clientId.passport}`} className="useDataImg3" alt="" />
+                                    <Image
+                                        // crossorigin="anonymous"
+                                        src={`${configData.PIC_URL}/${data.docId.clientId.passport}`} className="useDataImg3" alt="" />
                                     <div className="userDataName">
                                         <span>{data.docId.clientId.fullName}</span>
                                         <span>{data.docId.clientId.phoneNumber}</span>

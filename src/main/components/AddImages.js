@@ -133,7 +133,9 @@ const AddImages = (props) => {
                                 {images && images.length > 0 ?
                                   images.map((img, index) => ( <>
                                     <div key={index}>
-                                      <img crossorigin="anonymous" className="img" src={`${configData.PIC_URL}/Images/${img}`}/>
+                                      <img 
+                                      // crossorigin="anonymous" 
+                                      className="img" src={`${configData.PIC_URL}/Images/${img}`}/>
                                       <button onClick={() => onDeleteImage(index)}>Delete</button>
                                     </div>  
                                   </>)) 

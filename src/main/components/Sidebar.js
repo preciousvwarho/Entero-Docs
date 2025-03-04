@@ -8,25 +8,26 @@ import { DropDownArrow, DropDownActiveArrow, AdminIcon } from "../pages/svg/Svg"
 import logo from '../assets/img/ENTERO.png';
 import EditProfile from './EditProfile';
 import { Context } from '../../Store';
-import addNotification  from 'react-push-notification';
+import addNotification from 'react-push-notification';
 import io from 'socket.io-client';
 const socket = io(`${configData.URL}`);
+// import { useIdleTimer } from 'react-idle-timer/legacy'
+
 
 function Sidebar() {
     const location = useLocation();
     const history = useHistory();
-    const [navLink, setNavLink] = useState('');
     const [state, setState] = useContext(Context);
-
-
 
     useEffect(() => {
 
         socket.on('admin-notification', (data) => {
 
+            if(state?.profile?._id == data?.id) return
 
             if (Notification.permission !== 'granted') {
                 Notification.requestPermission().then((permission) => {
+                    console.log('request again')
                     if (permission === 'granted') {
                         notifyMe(data);
                     } else {
@@ -44,17 +45,29 @@ function Sidebar() {
         };
     }, []);
 
-    
-    const notifyMe = (data) => {
 
-        addNotification({
-            title: 'Admin Added',
-            // subtitle: 'Notification',
-            message: data.message,
-            icon: logo, // Ensure this is a valid icon
-            duration: 5000,
-            native: true,
-        });
+    const soundUrl = "/notification2.wav"; // Ensure this sound file is in public folder
+
+    const playNotificationSound = () => {
+      const audio = new Audio(soundUrl);
+      audio.play().catch((error) => console.error("Error playing sound:", error));
+    };
+
+    const notifyMe = (data) => {
+        
+        if (state.profile.role === 'admin' || (data?.for?.includes(state?.profile?.permission))) {
+            console.log("should work")
+            addNotification({
+                title: data?.title,
+                message: data?.message,
+                icon: 'https://enterohomes.com/img/logo.png',
+                duration: 5000,
+                native: true,
+                onClick: () => console.log("Notification clicked!"),
+            });
+
+            playNotificationSound()
+        }
     }
 
 
@@ -73,7 +86,7 @@ function Sidebar() {
             })
                 .then((response) => response.json())
                 .then((responseJson) => {
-                    console.log(responseJson.data);
+                    // console.log(responseJson.data);
                     if (responseJson.status === "success") {
                         setState({
                             ...state,
@@ -215,7 +228,9 @@ function Sidebar() {
 
                     <div className="LoginProf">
                         <div className="userDataOne">
-                            <Image crossorigin="anonymous" src={`${configData.PIC_URL}/${state.profile.profImage}`} className="useDataImg" alt="" />
+                            <Image
+                                // crossorigin="anonymous"
+                                src={`${configData.PIC_URL}/${state.profile.profImage}`} className="useDataImg" alt="" />
                             <div className="userDataName">
                                 <span className='profName'> {state.profile.fullName}</span>
                                 <span className='profPosition'> {state.profile.position}</span>
